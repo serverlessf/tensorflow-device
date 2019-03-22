@@ -1,4 +1,9 @@
 #!/bin/sh
+# $PORT -> post number per service
+# $QUERY -> query service address
+# $NAME -> (device) service name
+# $TOKEN -> (device) token
+
 # docker
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
