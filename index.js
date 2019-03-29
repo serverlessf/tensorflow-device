@@ -143,6 +143,7 @@ app.post('/model/:name/run', (req, res) => {
   });
 });
 
+
 app.get('/service', (req, res) => {
   res.json(services);
 });
@@ -173,6 +174,8 @@ app.post('/service/:name', (req, res) => {
   res.json(services[name]);
 });
 // TODO: CP, EXEC
+// services and models are very identical
+// except for run!
 app.post('/service/:name/run', (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
@@ -215,7 +218,6 @@ app.all('/process/:id/:fn', (req, res) => {
 });
 
 
-
 app.post('/shell', (req, res) => {
   var {command} = req.body;
   console.log('command:', command);
@@ -223,7 +225,6 @@ app.post('/shell', (req, res) => {
     res.json({err, stdout, stderr});
   });
 });
-
 app.get('/os', (req, res) => {
   var out = {};
   for(var fn of OSFN)
