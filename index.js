@@ -82,24 +82,25 @@ app.post('/model/:name/run', (req, res) => {
 //   });
 // });
 
+// use status code?
 app.get('/process', (req, res) => {
-  docker.listContainers((err, containers) => {
-    res.json(containers);
-  });
+  var options = req.body;
+  docker.listContainers(options, (err, data) => res.json({err, data}));
 });
 app.get('/process/:id', (req, res) => {
-  var {id} = req.params;
-  docker.listContainers((err, containers) => {
-    for(var container of containers)
-      if(container.Id===id) return res.json(container);
-    res.json({err: 'No such process '+id});
+  var {id} = req.params, options = req.body;
+  docker.listContainers(options, (err, containers) => {
+    var container = containers.find(c => c.Id===id);
+    res.json({err: container? null : 'No such process '+id, data: container});
   });
 });
-app.all('/process/:id/stats', (req, res) => {
-  var {id} = req.params;
-  docker.getContainer(id).logs({stdout: true, stderr: true}, (err, logs) => {
-    res.json(logs);
-  });
+app.delete('/process/:id', (req, res) => {
+  var {id} = req.params, options = req.body;
+  docker.getContainer(id).stop(options, (err, data) => res.json({err, data}));
+});
+app.all('/process/:id/:fn', (req, res) => {
+  var {id, fn} = req.params, options = req.body;
+  docker.getContainer(id)[fn](options, (err, data) => res.json({err, data}));
 });
 
 
