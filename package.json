@@ -1,6 +1,6 @@
 {
   "name": "@mycelium/device",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Device support for small distributed IoT network.",
   "main": "index.js",
   "scripts": {
@@ -27,6 +27,7 @@
   "homepage": "https://github.com/nodef/mycelium-device#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
+    "download": "^7.1.0",
     "express": "^4.16.4"
   }
 }
