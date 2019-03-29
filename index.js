@@ -1,4 +1,5 @@
 const bodyParser = require('body-parser');
+const Docker = require('dockerode');
 const express = require('express');
 const cp = require('child_process');
 const http = require('http');
@@ -28,6 +29,7 @@ const OSFN = [
   'totalmem', 'type', 'uptime', 'userInfo'
 ];
 const app = express();
+const docker = new Docker();
 
 
 
@@ -66,19 +68,41 @@ app.post('/model/:name/run', (req, res) => {
   });
 });
 
-app.get('/process/:id/logs', (req, res) => {
+// app.get('/process/:id/logs', (req, res) => {
+//   var {id} = req.params;
+//   cp.exec('docker logs '+cmdArgs(req.body, ['tail'])+' '+id, (err, stdout, stderr) => {
+//     res.json({err, stdout, stderr});
+//   });
+// });
+
+// app.all('/process/:id/:command', (req, res) => {
+//   var {id, command} = req.params;
+//   cp.exec('docker '+command+cmdArgs(req.body, ['tail'])+' '+id, (err, stdout, stderr) => {
+//     res.json({err, stdout, stderr});
+//   });
+// });
+
+app.get('/process', (req, res) => {
+  docker.listContainers((err, containers) => {
+    res.json(containers);
+  });
+});
+app.get('/process/:id', (req, res) => {
   var {id} = req.params;
-  cp.exec('docker logs '+cmdArgs(req.body, ['tail'])+' '+id, (err, stdout, stderr) => {
-    res.json({err, stdout, stderr});
+  docker.listContainers((err, containers) => {
+    for(var container of containers)
+      if(container.Id===id) return res.json(container);
+    res.json({err: 'No such process '+id});
+  });
+});
+app.all('/process/:id/stats', (req, res) => {
+  var {id} = req.params;
+  docker.getContainer(id).logs({stdout: true, stderr: true}, (err, logs) => {
+    res.json(logs);
   });
 });
 
-app.all('/process/:id/:command', (req, res) => {
-  var {id, command} = req.params;
-  cp.exec('docker '+command+cmdArgs(req.body, ['tail'])+' '+id, (err, stdout, stderr) => {
-    res.json({err, stdout, stderr});
-  });
-});
+
 
 app.post('/shell', (req, res) => {
   var {command} = req.body;
@@ -94,7 +118,7 @@ app.get('/os', (req, res) => {
     out[fn] = os[fn]();
   res.json(out);
 });
-app.get('/os/:func', (req, res) => {
+app.get('/os/:fn', (req, res) => {
   var {fn} = req.params;
   if(OSFN.includes(fn)) return res.json(os[fn]());
   res.json({err: 'unknown function '+fn});
