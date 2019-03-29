@@ -1,44 +1,90 @@
 const bodyParser = require('body-parser');
+const decompress = require('decompress');
+const download = require('download');
 const Docker = require('dockerode');
 const express = require('express');
+const fs = require('fs-extra');
 const cp = require('child_process');
 const http = require('http');
 const path = require('path');
-const fs = require('fs');
 const os = require('os');
 
 
 
 const PORT = '8080';
-const MODELS = './models';
+const MODELPATH = './data/model';
+const SERVICEPATH = './data/service';
+const CONFIGFILE = 'config.json';
 // rename
 //   search: ['limit'], // term
 // export
 // exec
 // cp
 
-const PARAMS_VALUED = {
-  kill: ['signal'],
-  logs: ['tail'],
-  restart: ['time'],
-  stop: ['time']
-};
 const OSFN = [
   'arch', 'cpus', 'endianness', 'freemem', 'homedir', 'hostname',
   'loadavg', 'networkInterfaces', 'platform', 'release', 'tmpdir',
   'totalmem', 'type', 'uptime', 'userInfo'
 ];
+const NOP = () => 0;
 const app = express();
 const docker = new Docker();
+const models = {};
+const services = {};
 
 
 
-function cmdArgs(params={}, valued=[]) {
-  var args = '';
-  for(var k in params)
-    args += valued.includes(k)? ` --${k} ${params[k]}` : ` --${k}`;
-  return args;
+const errNoModel = (res, name) => res.status(404).json('Cant find model '+name);
+const errModelExists = (res, name) => res.status(405).json('Model '+name+' already exists');
+const errNoService = (res, name) => res.status(404).json('Cant find service '+name);
+const errServiceExists = (res, name) => res.status(405).json('Service '+name+' already exists');
+
+
+
+function configRead(dir) {
+  var config = path.join(dir, CONFIGFILE);
+  return fs.existsSync(config)? JSON.parse(fs.readFileSync(config, 'utf8')) : {};
+}
+
+function configWrite(dir, value) {
+  var config = path.join(dir, CONFIGFILE);
+  fs.writeFile(config, JSON.stringify(value, null, 2), NOP);
+}
+
+function configsRead(dir, configs={}) {
+  for(var name of fs.readdirSync(dir))
+    configs[name] = Object.assign({name}, configRead(path.join(dir, name)));
+  return configs;
+}
+
+function downloadGit(dir, name, url) {
+  var cmd = `git clone --depth=1 ${url} ${name}`;
+  return new Promise((fres, frej) => cp.exec(cmd, {cwd: dir}, (err, stdout, stderr) => err? frej(stderr) : fres(stdout)));
+}
+
+async function downloadUrl(dir, name, url) {
+  var pkg = path.join(dir, name);
+  var out = path.join(pkg, path.basename(url));
+  fs.mkdirSync(pkg, {recursive: true});
+  await download(url, pkg, {extract: true});
+  await fs.remove(out);
+}
+
+async function downloadFile(dir, name, file) {
+  var pkg = path.join(dir, name);
+  var out = path.join(pkg, path.basename(file.name));
+  fs.mkdirSync(pkg, {recursive: true});
+  await new Promise((fres, frej) => file.mv(out, (err) => err? frej(err) : fres()));
+  await decompress(out);
+  await fs.remove(out);
 };
+
+function downloadAny(dir, name, options) {
+  var {git, url, file} = options||{};
+  if(git) return downloadGit(dir, name, git);
+  if(url) return downloadUrl(dir, name, url);
+  return downloadFile(dir, name, file);
+}
 
 
 
@@ -47,40 +93,48 @@ app.use(bodyParser.json());
 app.use((req, res, next) => { Object.assign(req.body, req.query); next(); });
 
 app.get('/model', (req, res) => {
-  fs.readdir(MODELS, (err, files) => res.json(files));
+  res.json(models);
 });
 app.post('/model', (req, res) => {
-  var {name, url, git} = req.body;
-  console.log('git', req.query)
-  if(git) return cp.exec(`git clone --depth=1 ${git} ${name}`, {cwd: MODELS}, (err, stdout, stderr) => {
-    res.json(err? {err: stderr} : {err});
+  var {name, git, url} = req.body, file = req.files.model;
+  if(models[name]) return errModelExists(res, name);
+  downloadAny(MODELPATH, name, {git, url, file}).then(() => {
+    models[name] = Object.assign(configRead(path.join(MODELPATH, name)), {name});
+    res.json(models[name]);
   });
 });
 app.delete('/model/:name', (req, res) => {
-
+  var {name} = req.params;
+  if(!models[name]) return errNoModel(res, name);
+  fs.remove(path.join(MODELPATH, name));
+  res.json(models[name] = null);
+});
+app.get('/model/:name', (req, res) => {
+  var {name} = req.params;
+  if(!models[name]) return errNoModel(res, name);
+  res.json(models[name]);
+});
+app.post('/model/:name', (req, res) => {
+  var {name} = req.params;
+  if(!models[name]) return errNoModel(res, name);
+  configWrite(path.join(MODELPATH, name), Object.assign(models[name], req.body, {name}));
+  res.json(models[name]);
 });
 app.post('/model/:name/run', (req, res) => {
   var {name} = req.params;
   var command = `docker run -d -p 8500:8500 \
-  --mount type=bind,source=${MODELS}/${name},target=/models/model \
-  -e MODEL_NAME=model -t tensorflow/serving >model.log 2>&1`;
+  --mount type=bind,source=${MODELPATH}/${name},target=/models/model \
+  -e MODEL_NAME=model -t tensorflow/serving`;
   cp.exec(command, (err, stdout, stderr) => {
   });
 });
 
-// app.get('/process/:id/logs', (req, res) => {
-//   var {id} = req.params;
-//   cp.exec('docker logs '+cmdArgs(req.body, ['tail'])+' '+id, (err, stdout, stderr) => {
-//     res.json({err, stdout, stderr});
-//   });
-// });
+app.get('/service', (req, res) => {
+  res.json(services);
+});
+app.post('/service', (req, res) => {
+});
 
-// app.all('/process/:id/:command', (req, res) => {
-//   var {id, command} = req.params;
-//   cp.exec('docker '+command+cmdArgs(req.body, ['tail'])+' '+id, (err, stdout, stderr) => {
-//     res.json({err, stdout, stderr});
-//   });
-// });
 
 // use status code?
 app.get('/process', (req, res) => {
@@ -128,7 +182,10 @@ app.get('/os/:fn', (req, res) => {
 
 
 
-fs.mkdirSync(MODELS, {recursive: true});
+fs.mkdirSync(MODELPATH, {recursive: true});
+fs.mkdirSync(SERVICEPATH, {recursive: true});
+configsRead(MODELPATH, models);
+configsRead(SERVICEPATH, services);
 const server = http.createServer(app);
 server.on('clientError', (err, soc) => {
   soc.end('HTTP/1.1 400 Bad Request\r\n\r\n');
