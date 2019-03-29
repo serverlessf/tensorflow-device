@@ -1,3 +1,5 @@
+const fileUpload = require('express-fileupload');
+const findFreePort = require('find-free-port');
 const bodyParser = require('body-parser');
 const decompress = require('decompress');
 const download = require('download');
@@ -90,16 +92,18 @@ function downloadAny(dir, name, options) {
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
+app.use(fileUpload());
 app.use((req, res, next) => { Object.assign(req.body, req.query); next(); });
 
 app.get('/model', (req, res) => {
   res.json(models);
 });
 app.post('/model', (req, res) => {
-  var {name, git, url} = req.body, file = req.files.model;
+  var {name, git, url} = req.body, file = (req.files||{}).model;
   if(models[name]) return errModelExists(res, name);
   downloadAny(MODELPATH, name, {git, url, file}).then(() => {
-    models[name] = Object.assign(configRead(path.join(MODELPATH, name)), {name});
+    var dir = path.join(MODELPATH, name);
+    models[name] = Object.assign(configRead(dir), {name});
     res.json(models[name]);
   });
 });
@@ -122,10 +126,20 @@ app.post('/model/:name', (req, res) => {
 });
 app.post('/model/:name/run', (req, res) => {
   var {name} = req.params;
-  var command = `docker run -d -p 8500:8500 \
-  --mount type=bind,source=${MODELPATH}/${name},target=/models/model \
-  -e MODEL_NAME=model -t tensorflow/serving`;
-  cp.exec(command, (err, stdout, stderr) => {
+  if(!models[name]) return errNoModel(res, name);
+  findFreePort(1024, 65535, '127.0.0.1', 2, (err, p1, p2) => {
+    if(err) return res.status(400).json(err);
+    var cmd = `docker run -d -p ${p1}:8500 ${p2}:8501 \
+    --mount type=bind,source=${MODELPATH}/${name},target=/models/model \
+    -e MODEL_NAME=model -t tensorflow/serving`;
+    cp.exec(cmd, (err, stdout, stderr) => {
+      if(err) return res.status(400).json(err);
+      var id = (stdout||stderr).trim(), model = models[name];
+      model.processes = model.processes||[];
+      model.processes.push(id);
+      configWrite(path.join(MODELPATH, name), model);
+      res.json(id);
+    });
   });
 });
 
