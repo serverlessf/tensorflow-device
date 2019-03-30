@@ -59,6 +59,15 @@ function configsRead(dir, configs={}) {
   return configs;
 }
 
+async function dirDehusk(dir) {
+  var ents = fs.readdirSync(dir, {withFileTypes: true});
+  if(ents.length>1 || ents[0].isFile()) return;
+  var temp = dir+'.temp', seed = path.join(temp, ents[0].name);
+  await fs.move(dir, temp);
+  await fs.move(seed, dir);
+  await fs.remove(temp);
+};
+
 function downloadGit(dir, name, url) {
   var cmd = `git clone --depth=1 ${url} ${name}`;
   return new Promise((fres, frej) => cp.exec(cmd, {cwd: dir}, (err, stdout, stderr) => err? frej(stderr) : fres(stdout)));
@@ -70,6 +79,7 @@ async function downloadUrl(dir, name, url) {
   fs.mkdirSync(pkg, {recursive: true});
   await download(url, pkg, {extract: true});
   await fs.remove(out);
+  await dirDehusk(pkg);
 }
 
 async function downloadFile(dir, name, file) {
@@ -79,6 +89,7 @@ async function downloadFile(dir, name, file) {
   await new Promise((fres, frej) => file.mv(out, (err) => err? frej(err) : fres()));
   await decompress(out);
   await fs.remove(out);
+  await dirDehusk(pkg);
 };
 
 function downloadAny(dir, name, options) {
