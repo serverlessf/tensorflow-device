@@ -121,7 +121,7 @@ function configRunOptions(config) {
   var c = config||{}, o = {};
   const keys = ['ports', 'mounts', 'env', 'cmd'];
   o.path = path.join(SERVICEPATH, c.name);
-  o.engine = c.engine;
+  o.engine = c.engine||'python:3';
   for(var k of keys) {
     var v = c[k]||[];
     o[k] = typeof v==='string'? v.split(';'):v;
@@ -139,7 +139,9 @@ function optionsTensorflowServing(options) {
 function optionsPython3(options) {
   var o = options||{};
   o.ports = o.ports.length? o.ports:[8000];
+  o.mounts = [`type=bind,source=${o.path},target=/usr/src/app`];// !!!
   o.env['PORT'] = o.ports[0].toString();
+  o.cmd = ['sh', '/usr/src/app/run.sh'];// !!!
 };
 
 async function optionsCommand(options) {
@@ -168,10 +170,11 @@ app.post('/service', async (req, res) => {
   if(services[name]) return errServiceExists(res, name);
   await downloadAny(SERVICEPATH, name, {git, url, file});
   var dir = path.join(SERVICEPATH, name);
+  await fs.copyFile(`${__dirname}/scripts/run_python3.sh`, `${dir}/run.sh`); // !!!
   services[name] = Object.assign(configRead(dir), req.body, configDefault());
   res.json(services[name]);
 });
-app.delete('/service/:name', (req, res) => {
+app.delete('/service/:name', async (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
   var jobs = [fs.remove(path.join(SERVICEPATH, name))];
@@ -220,17 +223,22 @@ app.post('/service/:name/run', async (req, res) => {
   if(o.engine==='tensorflow/serving') optionsTensorflowServing(o);
   else optionsPython3(o);
   var cmd = await optionsCommand(o);
+  console.log({cmd});
   var {stdout, stderr} = await cpExec(cmd);
-  var id = stdout||stderr;
+  var id = (stdout||stderr).toString().trim();
   var service = services[name];
   service.processes = service.processes||[];
   service.processes.push(id);
   var spath = path.join(SERVICEPATH, name);
   configWrite(spath, service);
   if(o.engine==='tensorflow/serving') return res.json(id);
-  await cpExec(`docker cp ${spath} ${id}:/usr/src/app`);
-  await cpExec(`docker cp ${__dirname}/scripts/run_python3.sh ${id}:/usr/src/app/run.sh`);
-  await cpExec(`docker exec -dt -w /usr/src/app ${id} ${(o.args||[]).join(' ')}`);
+  // console.log(1);
+  // await cpExec(`docker cp ${spath} ${id}:/usr/src/app`);
+  // console.log(2);
+  // await cpExec(`docker cp ${__dirname}/scripts/run_python3.sh ${id}:/usr/src/app/run.sh`);
+  // console.log(3);
+  // await cpExec(`docker exec -dit -w /usr/src/app ${id} sh run.sh ${(o.args||[]).join(' ')}`);
+  // console.log(4);
   res.json(id);
 });
 
