@@ -207,9 +207,9 @@ app.post('/service/:name/run', (req, res) => {
       console.log({spath});
       cp.exec(`docker cp ${spath} ${id}:/usr/src/app`, (err, stdout, stderr) => {
         console.log({err, stdout, stderr});
-        cp.exec(`docker exec -td -w /usr/src/app ${id} ls`, (err, stdout, stderr) => {
+        cp.exec(`docker exec -t -w /usr/src/app ${id} ls`, (err, stdout, stderr) => {
           console.log({err, stdout, stderr});
-          setTimeout(() => cp.exec(`docker exec -t -w /usr/src/app ${id} sh start.sh`, (err, stdout, stderr) => {
+          setTimeout(() => cp.exec(`docker exec -dt -w /usr/src/app ${id} sh start.sh`, (err, stdout, stderr) => {
             console.log({err, stdout, stderr});
           }), 1000);
         });
