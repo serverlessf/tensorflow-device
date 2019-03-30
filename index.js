@@ -29,7 +29,9 @@ const OSFN = [
   'loadavg', 'networkInterfaces', 'platform', 'release', 'tmpdir',
   'totalmem', 'type', 'uptime', 'userInfo'
 ];
+const STDIO = [0, 1, 2];
 const NOP = () => 0;
+
 const app = express();
 const docker = new Docker();
 const models = {};
@@ -43,6 +45,15 @@ const errNoService = (res, name) => res.status(404).json('Cant find service '+na
 const errServiceExists = (res, name) => res.status(405).json('Service '+name+' already exists');
 
 
+// Execute child process, return promise.
+function cpExec(cmd, o) {
+  var o = o||{}, stdio = o.log? o.stdio||STDIO:o.stdio||[];
+  if(o.log) console.log('-cpExec:', cmd);
+  if(o.stdio==null) return Promise.resolve({stdout: cp.execSync(cmd, {stdio})});
+  return new Promise((fres, frej) => cp.exec(cmd, {stdio}, (err, stdout, stderr) => {
+    return err? frej(err):fres({stdout, stderr});
+  }));
+};
 
 function configRead(dir) {
   var config = path.join(dir, CONFIGFILE);
