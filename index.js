@@ -22,7 +22,8 @@ const CONFIGFILE = 'config.json';
 // export
 // exec
 // cp
-
+const LOCALHOST = '127.0.0.1';
+const USERPORTS = [1024, 65535];
 const OSFN = [
   'arch', 'cpus', 'endianness', 'freemem', 'homedir', 'hostname',
   'loadavg', 'networkInterfaces', 'platform', 'release', 'tmpdir',
@@ -138,7 +139,7 @@ app.post('/model/:name', (req, res) => {
 app.post('/model/:name/run', (req, res) => {
   var {name} = req.params;
   if(!models[name]) return errNoModel(res, name);
-  findFreePort(1025, 65535, '127.0.0.1', 2, (err, p1, p2) => {
+  findFreePort(USERPORTS[0], USERPORTS[1], LOCALHOST, 2, (err, p1, p2) => {
     if(err) return res.status(400).json(err);
     var cmd = `docker run -d -p ${p1}:8500 -p ${p2}:8501 \
     --mount type=bind,source=${MODELPATH}/${name},target=/models/model \
