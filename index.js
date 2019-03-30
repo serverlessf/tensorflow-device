@@ -194,28 +194,7 @@ app.post('/service/:name', (req, res) => {
   configWrite(path.join(SERVICEPATH, name), Object.assign(services[name], req.body, {name}));
   res.json(services[name]);
 });
-// 1. start a container
-// 2. copy files to it
-// 3. install python dependencies
-// 4. start main script
-app.post('/model/:name/run', (req, res) => {
-  var {name} = req.params;
-  if(!models[name]) return errNoModel(res, name);
-  findFreePort(USERPORTS[0], USERPORTS[1], LOCALHOST, 2, (err, p1, p2) => {
-    if(err) return res.status(400).json(err);
-    var cmd = `docker run -d -p ${p1}:8500 -p ${p2}:8501 \
-    --mount type=bind,source=${MODELPATH}/${name},target=/models/model \
-    -e MODEL_NAME=model -t tensorflow/serving`;
-    cp.exec(cmd, (err, stdout, stderr) => {
-      if(err) return res.status(400).json(stderr);
-      var id = (stdout||stderr).trim(), model = models[name];
-      model.processes = model.processes||[];
-      model.processes.push(id);
-      configWrite(path.join(MODELPATH, name), model);
-      res.json(id);
-    });
-  });
-});
+// use copy mount strategy
 app.post('/service/:name/run', async (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
@@ -232,13 +211,6 @@ app.post('/service/:name/run', async (req, res) => {
   var spath = path.join(SERVICEPATH, name);
   configWrite(spath, service);
   if(o.engine==='tensorflow/serving') return res.json(id);
-  // console.log(1);
-  // await cpExec(`docker cp ${spath} ${id}:/usr/src/app`);
-  // console.log(2);
-  // await cpExec(`docker cp ${__dirname}/scripts/run_python3.sh ${id}:/usr/src/app/run.sh`);
-  // console.log(3);
-  // await cpExec(`docker exec -dit -w /usr/src/app ${id} sh run.sh ${(o.args||[]).join(' ')}`);
-  // console.log(4);
   res.json(id);
 });
 
