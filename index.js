@@ -13,9 +13,30 @@ const os = require('os');
 
 
 
+// think of install
+// think of startup
+// think of query server
+// think of stream server
+// think of supporting more engines
+// think of supporting dbs
+// think of linking componenets with env (singleton?)
+// think of web interface
+// DEVICE, QUERY, SERVICE, PROCESS, PORT, ENV
+// post upon exists -> restart all processes
+// /restart, /stop
+// direct service, process, file access, zip
+// per process env, SERVICE PROCESS PORT
+// service /restart -> all restart
+// read config with defaults and system local (from mem)
+// list service processes
+// list process service
+// how to know if process stopped, crashed
+// events websocket to control server
+// active processes, active listeners (ref counting)
 const PORT = '8080';
 const SERVICEPATH = __dirname+'/data/service';
-const MODELPATH = SERVICEPATH;
+const PROCESSPATH = __dirname+'/data/process';
+const CONFIG = __dirname+'/data/config.json';
 const CONFIGFILE = 'config.json';
 // rename
 //   search: ['limit'], // term
