@@ -185,23 +185,35 @@ app.post('/service/:name', (req, res) => {
   configWrite(path.join(SERVICEPATH, name), Object.assign(services[name], req.body, {name}));
   res.json(services[name]);
 });
-// TODO: CP, EXEC
-// services and models are very identical
-// except for run!
+// 1. start a container
+// 2. copy files to it
+// 3. install python dependencies
+// 4. start main script
 app.post('/service/:name/run', (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
-  findFreePort(1024, 65535, '127.0.0.1', 2, (err, p1, p2) => {
-    if(err) return res.status(400).json(err);
-    var cmd = `docker run -d -p ${p1}:8500 ${p2}:8501 \
-    --mount type=bind,source=${MODELPATH}/${name},target=/models/model \
-    -e MODEL_NAME=model -t tensorflow/serving`;
+  findFreePort(USERPORTS[0], USERPORTS[1], LOCALHOST, 2, (err, p1, p2) => {
+    if(err) return res.status(400).json(stderr);
+    var cmd = `docker run -d -p ${p1}:8500 \
+    -e PORT=8500 -it python:3`;
     cp.exec(cmd, (err, stdout, stderr) => {
+      console.log({err, stdout, stderr});
       if(err) return res.status(400).json(err);
-      var id = (stdout||stderr).trim(), model = models[name];
-      model.processes = model.processes||[];
-      model.processes.push(id);
-      configWrite(path.join(MODELPATH, name), model);
+      var id = (stdout||stderr).trim(), service = services[name];
+      service.processes = service.processes||[];
+      service.processes.push(id);
+      var spath = path.join(SERVICEPATH, name);
+      configWrite(spath, service);
+      console.log({spath});
+      cp.exec(`docker cp ${spath} ${id}:/usr/src/app`, (err, stdout, stderr) => {
+        console.log({err, stdout, stderr});
+        cp.exec(`docker exec -td -w /usr/src/app ${id} ls`, (err, stdout, stderr) => {
+          console.log({err, stdout, stderr});
+          setTimeout(() => cp.exec(`docker exec -t -w /usr/src/app ${id} sh start.sh`, (err, stdout, stderr) => {
+            console.log({err, stdout, stderr});
+          }), 1000);
+        });
+      });
       res.json(id);
     });
   });
