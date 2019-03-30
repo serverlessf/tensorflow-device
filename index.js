@@ -14,16 +14,14 @@ const os = require('os');
 
 
 const PORT = '8080';
-const MODELPATH = __dirname+'/data/model';
 const SERVICEPATH = __dirname+'/data/service';
+const MODELPATH = SERVICEPATH;
 const CONFIGFILE = 'config.json';
 // rename
 //   search: ['limit'], // term
 // export
 // exec
 // cp
-const LOCALHOST = '127.0.0.1';
-const USERPORTS = [1024, 65535];
 const OSFN = [
   'arch', 'cpus', 'endianness', 'freemem', 'homedir', 'hostname',
   'loadavg', 'networkInterfaces', 'platform', 'release', 'tmpdir',
@@ -34,15 +32,24 @@ const NOP = () => 0;
 
 const app = express();
 const docker = new Docker();
-const models = {};
 const services = {};
+const models = services;
 
 
 
-const errNoModel = (res, name) => res.status(404).json('Cant find model '+name);
-const errModelExists = (res, name) => res.status(405).json('Model '+name+' already exists');
-const errNoService = (res, name) => res.status(404).json('Cant find service '+name);
-const errServiceExists = (res, name) => res.status(405).json('Service '+name+' already exists');
+const errNoService = (res, name) => (
+  res.status(404).json('Cant find service '+name)
+);
+const errServiceExists = (res, name) => (
+  res.status(405).json('Service '+name+' already exists')
+);
+
+const configDefault = () => ({
+  engine: 'python:3',
+  created: new Date(),
+  processes: []
+});
+
 
 
 // Execute child process, return promise.
@@ -51,24 +58,8 @@ function cpExec(cmd, o) {
   if(o.log) console.log('-cpExec:', cmd);
   if(o.stdio==null) return Promise.resolve({stdout: cp.execSync(cmd, {stdio})});
   return new Promise((fres, frej) => cp.exec(cmd, {stdio}, (err, stdout, stderr) => {
-    return err? frej(err):fres({stdout, stderr});
+    return (err? frej:fres)({err, stdout, stderr});
   }));
-};
-
-function configRead(dir) {
-  var config = path.join(dir, CONFIGFILE);
-  return fs.existsSync(config)? JSON.parse(fs.readFileSync(config, 'utf8')) : {};
-}
-
-function configWrite(dir, value) {
-  var config = path.join(dir, CONFIGFILE);
-  fs.writeFile(config, JSON.stringify(value, null, 2), NOP);
-}
-
-function configsRead(dir, configs={}) {
-  for(var name of fs.readdirSync(dir))
-    configs[name] = Object.assign({name}, configRead(path.join(dir, name)));
-  return configs;
 }
 
 async function dirDehusk(dir) {
@@ -81,8 +72,7 @@ async function dirDehusk(dir) {
 };
 
 function downloadGit(dir, name, url) {
-  var cmd = `git clone --depth=1 ${url} ${name}`;
-  return new Promise((fres, frej) => cp.exec(cmd, {cwd: dir}, (err, stdout, stderr) => err? frej(stderr) : fres(stdout)));
+  return cpExec(`git clone --depth=1 ${url} ${name}`, {cwd: dir});
 }
 
 async function downloadUrl(dir, name, url) {
@@ -98,7 +88,7 @@ async function downloadFile(dir, name, file) {
   var pkg = path.join(dir, name);
   var out = path.join(pkg, path.basename(file.name));
   fs.mkdirSync(pkg, {recursive: true});
-  await new Promise((fres, frej) => file.mv(out, (err) => err? frej(err) : fres()));
+  await new Promise((fres, frej) => file.mv(out, (err) => err? frej(err):fres()));
   await decompress(out);
   await fs.remove(out);
   await dirDehusk(pkg);
@@ -111,6 +101,57 @@ function downloadAny(dir, name, options) {
   return downloadFile(dir, name, file);
 }
 
+function configRead(dir) {
+  var config = path.join(dir, CONFIGFILE);
+  return fs.existsSync(config)? JSON.parse(fs.readFileSync(config, 'utf8')) : {};
+}
+
+function configWrite(dir, value) {
+  var config = path.join(dir, CONFIGFILE);
+  fs.writeFile(config, JSON.stringify(value, null, 2), NOP);
+}
+
+function configsRead(dir, configs={}) {
+  for(var name of fs.readdirSync(dir))
+    configs[name] = Object.assign(configRead(path.join(dir, name)), {name});
+  return configs;
+}
+
+function configRunOptions(config) {
+  var c = config||{}, o = {};
+  const keys = ['ports', 'mounts', 'env', 'cmd'];
+  o.path = path.join(SERVICEPATH, c.name);
+  o.engine = c.engine;
+  for(var k of keys) {
+    var v = c[k]||[];
+    o[k] = typeof v==='string'? v.split(';'):v;
+  }
+  return o;
+};
+
+function optionsTensorflowServing(options) {
+  var o = options||{};
+  o.ports = [8500, 8501];
+  o.mounts = [`type=bind,source=${o.path},target=/models/model`];
+  o.env['MODEL_NAME'] = 'model';
+};
+
+function optionsPython3(options) {
+  var o = options||{};
+  o.ports = o.ports.length? o.ports:[8000];
+  o.env['PORT'] = o.ports[0].toString();
+};
+
+async function optionsCommand(options) {
+  var {engine, ports, mounts, env, cmd} = options||{};
+  var freePorts = await findFreePort(1024, 65535, '127.0.0.1', ports.length);
+  var portsStr = ports.reduce((str, port, i) => str+` -p ${freePorts[i]}:${port}`, '');
+  var mountsStr = mounts.reduce((str, mount) => str+` --mount ${mount}`, '');
+  var envStr = Object.keys(env).reduce((str, k) => str+` -e ${k}=${env[k]}`, '');
+  var cmdStr = cmd.join(' ');
+  return `docker run -d ${portsStr} ${mountsStr} ${envStr} -it ${engine} ${cmdStr}`;
+};
+
 
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -118,35 +159,42 @@ app.use(bodyParser.json());
 app.use(fileUpload());
 app.use((req, res, next) => { Object.assign(req.body, req.query); next(); });
 
-app.get('/model', (req, res) => {
-  res.json(models);
+app.get('/service', (req, res) => {
+  res.json(services);
 });
-app.post('/model', (req, res) => {
-  var {name, git, url} = req.body, file = (req.files||{}).model;
-  if(models[name]) return errModelExists(res, name);
-  downloadAny(MODELPATH, name, {git, url, file}).then(() => {
-    var dir = path.join(MODELPATH, name);
-    models[name] = Object.assign(configRead(dir), {name});
-    res.json(models[name]);
-  });
+app.post('/service', async (req, res) => {
+  var {name, git, url} = req.body;
+  var file = (req.files||{}).service;
+  if(services[name]) return errServiceExists(res, name);
+  await downloadAny(SERVICEPATH, name, {git, url, file});
+  var dir = path.join(SERVICEPATH, name);
+  services[name] = Object.assign(configRead(dir), req.body, configDefault());
+  res.json(services[name]);
 });
-app.delete('/model/:name', (req, res) => {
+app.delete('/service/:name', (req, res) => {
   var {name} = req.params;
-  if(!models[name]) return errNoModel(res, name);
-  fs.remove(path.join(MODELPATH, name));
-  res.json(models[name] = null);
+  if(!services[name]) return errNoService(res, name);
+  var jobs = [fs.remove(path.join(SERVICEPATH, name))];
+  for(var id of services[name].processes)
+    jobs.push(docker.getContainer(id).stop(req.body));
+  await Promise.all(jobs);
+  res.json(services[name] = null);
 });
-app.get('/model/:name', (req, res) => {
+app.get('/service/:name', (req, res) => {
   var {name} = req.params;
-  if(!models[name]) return errNoModel(res, name);
-  res.json(models[name]);
+  if(!services[name]) return errNoService(res, name);
+  res.json(services[name]);
 });
-app.post('/model/:name', (req, res) => {
+app.post('/service/:name', (req, res) => {
   var {name} = req.params;
-  if(!models[name]) return errNoModel(res, name);
-  configWrite(path.join(MODELPATH, name), Object.assign(models[name], req.body, {name}));
-  res.json(models[name]);
+  if(!services[name]) return errNoService(res, name);
+  configWrite(path.join(SERVICEPATH, name), Object.assign(services[name], req.body, {name}));
+  res.json(services[name]);
 });
+// 1. start a container
+// 2. copy files to it
+// 3. install python dependencies
+// 4. start main script
 app.post('/model/:name/run', (req, res) => {
   var {name} = req.params;
   if(!models[name]) return errNoModel(res, name);
@@ -165,69 +213,25 @@ app.post('/model/:name/run', (req, res) => {
     });
   });
 });
-
-
-app.get('/service', (req, res) => {
-  res.json(services);
-});
-app.post('/service', (req, res) => {
-  var {name, git, url} = req.body, file = (req.files||{}).service;
-  if(services[name]) return errServiceExists(res, name);
-  downloadAny(SERVICEPATH, name, {git, url, file}).then(() => {
-    var dir = path.join(SERVICEPATH, name);
-    services[name] = Object.assign(configRead(dir), {name});
-    res.json(services[name]);
-  });
-});
-app.delete('/service/:name', (req, res) => {
+app.post('/service/:name/run', async (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
-  fs.remove(path.join(SERVICEPATH, name));
-  res.json(services[name] = null);
-});
-app.get('/service/:name', (req, res) => {
-  var {name} = req.params;
-  if(!services[name]) return errNoService(res, name);
-  res.json(services[name]);
-});
-app.post('/service/:name', (req, res) => {
-  var {name} = req.params;
-  if(!services[name]) return errNoService(res, name);
-  configWrite(path.join(SERVICEPATH, name), Object.assign(services[name], req.body, {name}));
-  res.json(services[name]);
-});
-// 1. start a container
-// 2. copy files to it
-// 3. install python dependencies
-// 4. start main script
-app.post('/service/:name/run', (req, res) => {
-  var {name} = req.params;
-  if(!services[name]) return errNoService(res, name);
-  findFreePort(USERPORTS[0], USERPORTS[1], LOCALHOST, 2, (err, p1, p2) => {
-    if(err) return res.status(400).json(stderr);
-    var cmd = `docker run -d -p ${p1}:8500 \
-    -e PORT=8500 -it python:3`;
-    cp.exec(cmd, (err, stdout, stderr) => {
-      console.log({err, stdout, stderr});
-      if(err) return res.status(400).json(err);
-      var id = (stdout||stderr).trim(), service = services[name];
-      service.processes = service.processes||[];
-      service.processes.push(id);
-      var spath = path.join(SERVICEPATH, name);
-      configWrite(spath, service);
-      console.log({spath});
-      cp.exec(`docker cp ${spath} ${id}:/usr/src/app`, (err, stdout, stderr) => {
-        console.log({err, stdout, stderr});
-        cp.exec(`docker exec -t -w /usr/src/app ${id} ls`, (err, stdout, stderr) => {
-          console.log({err, stdout, stderr});
-          setTimeout(() => cp.exec(`docker exec -dt -w /usr/src/app ${id} sh start.sh`, (err, stdout, stderr) => {
-            console.log({err, stdout, stderr});
-          }), 1000);
-        });
-      });
-      res.json(id);
-    });
-  });
+  var o = configRunOptions(Object.assign(req.body, services[name]));
+  if(o.engine==='tensorflow/serving') optionsTensorflowServing(o);
+  else optionsPython3(o);
+  var cmd = await optionsCommand(o);
+  var {stdout, stderr} = await cpExec(cmd);
+  var id = stdout||stderr;
+  var service = services[name];
+  service.processes = service.processes||[];
+  service.processes.push(id);
+  var spath = path.join(SERVICEPATH, name);
+  configWrite(spath, service);
+  if(o.engine==='tensorflow/serving') return res.json(id);
+  await cpExec(`docker cp ${spath} ${id}:/usr/src/app`);
+  await cpExec(`docker cp ${__dirname}/scripts/run_python3.sh ${id}:/usr/src/app/run.sh`);
+  await cpExec(`docker exec -dt -w /usr/src/app ${id} ${(o.args||[]).join(' ')}`);
+  res.json(id);
 });
 
 
