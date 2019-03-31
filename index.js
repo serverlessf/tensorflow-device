@@ -33,13 +33,13 @@ const os = require('os');
 // how to know if process stopped, crashed
 // events websocket to control server
 // active processes, active listeners (ref counting)
+// readonly mount tensorflow serving, copy mount others
+// use dockerode for all docker commands
 const PORT = '8080';
 const SERVICEPATH = __dirname+'/data/service';
 const PROCESSPATH = __dirname+'/data/process';
 const CONFIG = __dirname+'/data/config.json';
 const CONFIGFILE = 'config.json';
-// rename
-//   search: ['limit'], // term
 // export
 // exec
 // cp
@@ -73,7 +73,11 @@ const configDefault = () => ({
 
 
 
-// Execute child process, return promise.
+function arrayEnsure(val) {
+  if(val==null) return [];
+  return Array.isArray(val)? val:[val];
+};
+
 function cpExec(cmd, o) {
   var o = o||{}, stdio = o.log? o.stdio||STDIO:o.stdio||[];
   if(o.log) console.log('-cpExec:', cmd);
@@ -237,33 +241,35 @@ app.post('/service/:name/run', async (req, res) => {
 
 
 // use status code?
-app.get('/process', (req, res) => {
-  var options = req.body;
-  docker.listContainers(options, (err, data) => res.json({err, data}));
+app.get('/process', async (req, res) => {
+  var options = req.body, filters = (options||{}).filters||{};
+  for(var k in filters)
+    filters[k] = arrayEnsure(filters[k]);
+  var data = await docker.listContainers(options);
+  res.json(data);
 });
-app.get('/process/:id', (req, res) => {
+app.get('/process/:id', async (req, res) => {
   var {id} = req.params, options = req.body;
-  docker.listContainers(options, (err, containers) => {
-    var container = containers.find(c => c.Id===id);
-    res.json({err: container? null : 'No such process '+id, data: container});
-  });
+  var data = await docker.getContainer(id).inspect(options);
+  res.json(data);
 });
-app.delete('/process/:id', (req, res) => {
+app.delete('/process/:id', async (req, res) => {
   var {id} = req.params, options = req.body;
-  docker.getContainer(id).stop(options, (err, data) => res.json({err, data}));
+  await docker.getContainer(id).stop(options);
+  res.json(null);
 });
-app.all('/process/:id/:fn', (req, res) => {
-  var {id, fn} = req.params, options = req.body;
-  docker.getContainer(id)[fn](options, (err, data) => res.json({err, data}));
+app.all('/process/:id/:fn', async (req, res) => {
+  var {id, fn} = req.params;
+  var options = ['changes'].includes(fn)? undefined:req.body;
+  var data = await docker.getContainer(id)[fn](options);
+  res.json(data);
 });
 
 
-app.post('/shell', (req, res) => {
+app.post('/shell', async (req, res) => {
   var {command} = req.body;
-  console.log('command:', command);
-  cp.exec(command, (err, stdout, stderr) => {
-    res.json({err, stdout, stderr});
-  });
+  var {stdout, stderr} = await cpExec(command);
+  res.json({stdout, stderr});
 });
 app.get('/os', (req, res) => {
   var out = {};
@@ -274,15 +280,14 @@ app.get('/os', (req, res) => {
 app.get('/os/:fn', (req, res) => {
   var {fn} = req.params;
   if(OSFN.includes(fn)) return res.json(os[fn]());
-  res.json({err: 'unknown function '+fn});
+  res.status(404).json('Unknown function '+fn);
 });
 // we are not serving static files yet!
 
 
 
-fs.mkdirSync(MODELPATH, {recursive: true});
+fs.mkdirSync(PROCESSPATH, {recursive: true});
 fs.mkdirSync(SERVICEPATH, {recursive: true});
-configsRead(MODELPATH, models);
 configsRead(SERVICEPATH, services);
 const server = http.createServer(app);
 server.on('clientError', (err, soc) => {
