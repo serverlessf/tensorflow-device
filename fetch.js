@@ -2,14 +2,9 @@ const decompress = require('decompress');
 const download = require('download');
 const fs = require('fs-extra');
 const path = require('path');
-const {cpExec} = require('./util');
+const {cpExec, pathFilename} = require('./util');
 
 
-
-function pathFilename(p) {
-  var base = path.basename(p).length, ext = path.extname(p).length;
-  return p.substring(p.length-base, p.length-ext);
-}
 
 async function dirDehusk(dir) {
   var ents = fs.readdirSync(dir, {withFileTypes: true});

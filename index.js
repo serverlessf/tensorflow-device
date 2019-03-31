@@ -11,7 +11,7 @@ const fs = require('fs-extra');
 const http = require('http');
 const path = require('path');
 const os = require('os');
-const {arrayEnsure, cpExec} = require('./util');
+const {arrayEnsure, cpExec, pathFilename} = require('./util');
 const config = require('./config');
 const error = require('./error');
 const fetch = require('./fetch');
@@ -71,10 +71,11 @@ app.get('/service', (req, res) => {
 app.post('/service', async (req, res) => {
   var {name, git, url} = req.body;
   var file = (req.files||{}).service;
-  if(services[name]) return error.serviceExixts(res, name);
+  name = name||pathFilename(git||url||file.name);
+  if(services[name]) return error.serviceExists(res, name);
   await fetch({git, url, file}, SERVICEPATH, name);
   var dir = path.join(SERVICEPATH, name);
-  services[name] = Object.assign(config.read(dir), req.body);
+  services[name] = Object.assign({name}, config.read(dir), req.body, {name});
   res.json(services[name]);
 });
 app.delete('/service/:name', async (req, res) => {
@@ -172,7 +173,8 @@ app.all('/process/:id/:fn', async (req, res) => {
   var {id, fn} = req.params;
   var options = ['changes'].includes(fn)? undefined:req.body;
   var data = await docker.getContainer(id)[fn](options);
-  res.json(data);
+  if(fn==='logs') res.send(data);
+  else res.json(data);
 });
 
 
@@ -192,6 +194,10 @@ app.get('/os/:fn', (req, res) => {
   if(OSFN.includes(fn)) return res.json(os[fn]());
   res.status(404).json('Unknown function '+fn);
 });
+app.use((err, req, res, next) => {
+  console.error(err.stack)
+  res.status(500).send('Something broke!')
+})
 // we are not serving static files yet!
 
 

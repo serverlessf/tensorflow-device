@@ -1,4 +1,5 @@
 const cp = require('child_process');
+const path = require('path');
 
 
 
@@ -13,7 +14,13 @@ function cpExec(cmd, o) {
   }));
 }
 
+function pathFilename(p) {
+  var base = path.basename(p).length, ext = path.extname(p).length;
+  return p.substring(p.length-base, p.length-ext);
+}
+
 
 
 exports.arrayEnsure = arrayEnsure;
 exports.cpExec = cpExec;
+exports.pathFilename = pathFilename;
