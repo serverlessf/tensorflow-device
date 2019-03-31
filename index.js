@@ -41,19 +41,17 @@ const PROCESSPATH = __dirname+'/data/process';
 const CONFIG = __dirname+'/data/config.json';
 const CONFIGFILE = 'config.json';
 // exec
-// cp
 const OSFN = [
   'arch', 'cpus', 'endianness', 'freemem', 'homedir', 'hostname',
   'loadavg', 'networkInterfaces', 'platform', 'release', 'tmpdir',
   'totalmem', 'type', 'uptime', 'userInfo'
 ];
-const STDIO = [0, 1, 2];
+const STDIO = [];
 const NOP = () => 0;
 
 const app = express();
 const docker = new Docker();
 const services = {};
-const models = services;
 
 
 
@@ -80,9 +78,9 @@ function arrayEnsure(val) {
 function cpExec(cmd, o) {
   var o = o||{}, stdio = o.log? o.stdio||STDIO:o.stdio||[];
   if(o.log) console.log('-cpExec:', cmd);
-  if(o.stdio==null) return Promise.resolve({stdout: cp.execSync(cmd, {stdio})});
+  if(o.stdio==null) return Promise.resolve({stdout: cp.execSync(cmd, {stdio}).toString()});
   return new Promise((fres, frej) => cp.exec(cmd, {stdio}, (err, stdout, stderr) => {
-    return (err? frej:fres)({err, stdout, stderr});
+    return (err? frej:fres)({err, stdout: stdout.toString(), stderr: stderr.toString()});
   }));
 }
 
@@ -178,6 +176,16 @@ async function optionsCommand(options) {
   return `docker run -d ${portsStr} ${mountsStr} ${envStr} -it ${engine} ${cmdStr}`;
 };
 
+function commandOptions(options, values=[], exclude=[]) {
+  var o = options||{}, out = '';
+  for(var k in o) {
+    if(exclude.includes(k)) continue;
+    if(!values.includes(k)) out += ` --${k}`;
+    else out += ` --${k}`;
+  }
+  return out.trimStart();
+};
+
 
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -241,7 +249,7 @@ app.post('/service/:name/run', async (req, res) => {
   var cmd = await optionsCommand(o);
   console.log({cmd});
   var {stdout, stderr} = await cpExec(cmd);
-  var id = (stdout||stderr).toString().trim();
+  var id = (stdout||stderr).trim();
   var service = services[name];
   service.processes = service.processes||[];
   service.processes.push(id);
@@ -269,6 +277,12 @@ app.delete('/process/:id', async (req, res) => {
   var {id} = req.params, options = req.body;
   await docker.getContainer(id).stop(options);
   res.json(null);
+});
+app.post('/process/:id/exec', async (req, res) => {
+  var {id} = req.params, options = req.body||{}, cmd = options.cmd||'';
+  var opts = commandOptions(req.body, [], ['cmd'])
+  var {stdout, stderr} = await cpExec(`docker exec ${opts} ${id} ${cmd}`);
+  res.json({stdout, stderr});
 });
 app.get('/process/:id/export', async (req, res) => {
   var {id} = req.params;
