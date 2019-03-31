@@ -1,0 +1,13 @@
+{
+  "copyfs": true,
+  "ports": [8000],
+  "mounts": ["type=bind,source=$PATH,target=/usr/src/app"],
+  "workdir": "/usr/src/app",
+  "env": {
+    "DEVICE": "127.0.0.1:$PORT",
+    "QUERY": "NOT_SPECIFIED",
+    "SERVICE": "$SERVICE",
+    "PROCESS": "NOT_SPECIFIED",
+    "PORT": "$PORT"
+  }
+}

@@ -1,0 +1,3 @@
+{
+  "cmd": ["sh", "-c", "if [ ! -e setup.done ]; then npm install; touch setup.done; fi; npm start"]
+}
