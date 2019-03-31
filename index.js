@@ -64,9 +64,14 @@ const configDefault = () => ({
 // give process name
 
 
-function arrayEnsure(val) {
-  if(val==null) return [];
-  return Array.isArray(val)? val:[val];
+function arrayEnsure(v) {
+  if(v==null) return [];
+  return Array.isArray(v)? v:[v];
+}
+
+function pathFilename(p) {
+  var base = path.basename(p).length, ext = path.extname(p).length;
+  return p.substring(p.length-base, p.length-ext);
 }
 
 function cpExec(cmd, o) {
@@ -82,15 +87,17 @@ async function dirDehusk(dir) {
   await fs.move(dir, temp);
   await fs.move(seed, dir);
   await fs.remove(temp);
-};
-
-function downloadGit(dir, name, url) {
-  var repo = url.replace(/#.*/, ''), branch = url.substring(repo.length+1)||'master';
-  var cmd = `git clone --single-branch --branch ${branch} --depth=1 ${repo} ${name}`;
-  return cpExec(cmd, {cwd: dir});
 }
 
-async function downloadUrl(dir, name, url) {
+async function downloadGit(url, dir, name=null) {
+  var name = name||pathFilename(url);
+  var repo = url.replace(/#.*/, ''), branch = url.substring(repo.length+1)||'master';
+  var cmd = `git clone --single-branch --branch ${branch} --depth=1 ${repo} ${name}`;
+  await cpExec(cmd, {cwd: dir});
+}
+
+async function downloadUrl(url, dir, name=null) {
+  var name = name||pathFilename(url);
   var pkg = path.join(dir, name);
   var out = path.join(pkg, path.basename(url));
   fs.mkdirSync(pkg, {recursive: true});
@@ -99,7 +106,8 @@ async function downloadUrl(dir, name, url) {
   await dirDehusk(pkg);
 }
 
-async function downloadFile(dir, name, file) {
+async function downloadFile(file, dir, name=null) {
+  var name = name||pathFilename(file.name);
   var pkg = path.join(dir, name);
   var out = path.join(pkg, path.basename(file.name));
   fs.mkdirSync(pkg, {recursive: true});
@@ -107,13 +115,13 @@ async function downloadFile(dir, name, file) {
   await decompress(out);
   await fs.remove(out);
   await dirDehusk(pkg);
-};
+}
 
-function downloadAny(dir, name, options) {
-  var {git, url, file} = options||{};
-  if(git) return downloadGit(dir, name, git);
-  if(url) return downloadUrl(dir, name, url);
-  return downloadFile(dir, name, file);
+function downloadAny(options, dir, name=null) {
+  var {git, url, file} = options;
+  if(git) return downloadGit(git, dir, name);
+  if(url) return downloadUrl(url, dir, name);
+  return downloadFile(file, dir, name);
 }
 
 function configTfServing(o) {
@@ -207,7 +215,7 @@ app.post('/service', async (req, res) => {
   var {name, git, url} = req.body;
   var file = (req.files||{}).service;
   if(services[name]) return errServiceExists(res, name);
-  await downloadAny(SERVICEPATH, name, {git, url, file});
+  await downloadAny({git, url, file}, SERVICEPATH, name);
   var dir = path.join(SERVICEPATH, name);
   await fs.copyFile(`${__dirname}/scripts/run_python3.sh`, `${dir}/run.sh`); // !!!
   services[name] = Object.assign(configRead(dir), req.body, configDefault());
