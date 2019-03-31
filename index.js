@@ -67,7 +67,23 @@ const configDefault = () => ({
   created: new Date(),
   processes: []
 });
-
+// icon
+// version
+// description
+// scripts
+// repository
+// keywords
+// author
+// license
+// main
+// cmd
+// env
+// readonly
+// copyfs
+// mounts
+// ports
+// processes XX
+// give process name
 
 
 function arrayEnsure(val) {
@@ -331,8 +347,8 @@ app.get('/os/:fn', (req, res) => {
 
 
 
-fs.mkdirSync(PROCESSPATH, {recursive: true});
 fs.mkdirSync(SERVICEPATH, {recursive: true});
+fs.mkdirSync(PROCESSPATH, {recursive: true});
 configsRead(SERVICEPATH, services);
 const server = http.createServer(app);
 server.on('clientError', (err, soc) => {
