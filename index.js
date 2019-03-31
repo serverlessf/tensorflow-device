@@ -40,7 +40,6 @@ const SERVICEPATH = __dirname+'/data/service';
 const PROCESSPATH = __dirname+'/data/process';
 const CONFIG = __dirname+'/data/config.json';
 const CONFIGFILE = 'config.json';
-// export
 // exec
 // cp
 const OSFN = [
@@ -257,6 +256,12 @@ app.delete('/process/:id', async (req, res) => {
   var {id} = req.params, options = req.body;
   await docker.getContainer(id).stop(options);
   res.json(null);
+});
+app.get('/process/:id/export', async (req, res) => {
+  var {id} = req.params;
+  var stream = await docker.getContainer(id).export();
+  res.writeHead(200, {'content-type': 'application/x-tar'});
+  stream.pipe(res);
 });
 app.all('/process/:id/:fn', async (req, res) => {
   var {id, fn} = req.params;
