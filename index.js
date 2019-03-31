@@ -81,8 +81,9 @@ app.delete('/service/:name', async (req, res) => {
   var {name} = req.params;
   if(!services[name]) return error.noService(res, name);
   var jobs = [fs.remove(path.join(SERVICEPATH, name))];
-  for(var id of services[name].processes)
-    jobs.push(docker.getContainer(id).stop(req.body));
+  var cs = await docker.listContainers();
+  for(var c of cs.filter(c => c.Names[0].includes(name)))
+    jobs.push(docker.getContainer(c.Id).stop(req.body));
   await Promise.all(jobs);
   res.json(services[name] = null);
 });
@@ -112,19 +113,14 @@ app.post('/service/:name/fs/*', async (req, res) => {
   res.json(file.size);
 });
 app.post('/service/:name/run', async (req, res) => {
-  var {name} = req.params, service = services[name];
-  if(!service) return error.noService(res, name);
+  var {name} = req.params;
+  if(!services[name]) return error.noService(res, name);
   var pname = name+'.'+dockerNames.getRandomName();
-  var o = Object.assign(req.body, service);
+  var o = Object.assign(req.body, services[name]);
   var cmd = await commandRun(o, pname);
-  console.log({cmd});
   var {stdout, stderr} = await cpExec(cmd);
   var id = (stdout||stderr).trim();
-  service.processes = service.processes||[];
-  service.processes.push(id);
-  var spath = path.join(SERVICEPATH, name);
-  config.write(spath, service);
-  res.json(id);
+  res.json({id, name: pname});
 });
 
 
