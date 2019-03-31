@@ -36,9 +36,8 @@ const services = {};
 
 
 async function commandRun(o, pname) {
-  var ppath = o.copyfs? path.join(PROCESSPATH, pname):o;
+  var ppath = o.copyfs? path.join(PROCESSPATH, pname):o.path;
   if(o.copyfs) await fs.copy(o.path, ppath);
-  await fs.copy(__dirname+'/scripts/run_python3.sh', path.join(ppath, 'start.sh'));
   var workdir = `-w ${o.workdir}`, name = `--name ${pname}`;
   var freePorts = await findFreePort(1024, 65535, '127.0.0.1', o.ports.length);
   var ports = o.ports.reduce((str, port, i) => str+` -p ${freePorts[i]}:${port}`, '');
