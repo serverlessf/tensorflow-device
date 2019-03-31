@@ -12,6 +12,7 @@ const http = require('http');
 const path = require('path');
 const os = require('os');
 const {arrayEnsure, cpExec} = require('./util');
+const config = require('./config');
 const error = require('./error');
 const fetch = require('./fetch');
 
@@ -21,78 +22,17 @@ const PORT = '8080';
 const SERVICEPATH = __dirname+'/_data/service';
 const PROCESSPATH = __dirname+'/_data/process';
 const CONFIG = __dirname+'/_data/config.json';
-const CONFIGFILE = 'config.json';
 // exec
 const OSFN = [
   'arch', 'cpus', 'endianness', 'freemem', 'homedir', 'hostname',
   'loadavg', 'networkInterfaces', 'platform', 'release', 'tmpdir',
   'totalmem', 'type', 'uptime', 'userInfo'
 ];
-const NOP = () => 0;
 
 const app = express();
 const docker = new Docker();
 const services = {};
 
-
-const configDefault = () => ({
-  engine: 'python:3',
-  created: new Date(),
-  processes: []
-});
-
-
-function configTfServing(o) {
-  o.ports = [8500, 8501];
-  o.mounts = ['type=bind,source=${path},target=/models/model'];
-  o.env = o.env||{};
-  o.env['MODEL_NAME'] = 'model';
-  return o;
-};
-
-function configLang(o) {
-  o.copyfs = true;
-  o.ports = o.ports||[8000];
-  o.mounts = ['type=bind,source=${path},target=/usr/src/app'];
-  o.env = o.env||{};
-  o.env['DEVICE'] = `127.0.0.1:${PORT}`;
-  o.env['QUERY'] = `TODO`;
-  o.env['SERVICE'] = o.name;
-  o.env['PROCESS'] = `TODO`;
-  o.env['PORT'] = o.ports[0].toString();
-  o.workdir = o.workdir||'/usr/src/app';
-  o.cmd = o.cmd||['sh', 'start.sh'];
-  return o;
-};
-
-function configDef(o) {
-  const keys = ['ports', 'mounts', 'env', 'cmd'];
-  o.path = path.join(SERVICEPATH, o.name);
-  o.version = o.version||0;
-  o.engine = o.engine||'python:3';
-  for(var k of keys) {
-    var v = o[k]||null;
-    o[k] = typeof v==='string'? v.split(';'):v;
-  }
-  if(o.engine==='tensorflow/serving') return configTfServing(o);
-  return configLang(o);
-};
-
-function configRead(dir) {
-  var config = path.join(dir, CONFIGFILE);
-  return fs.existsSync(config)? JSON.parse(fs.readFileSync(config, 'utf8')) : {};
-}
-
-function configWrite(dir, value) {
-  var config = path.join(dir, CONFIGFILE);
-  fs.writeFile(config, JSON.stringify(value, null, 2), NOP);
-}
-
-function configsRead(dir, configs={}) {
-  for(var name of fs.readdirSync(dir))
-    configs[name] = Object.assign(configRead(path.join(dir, name)), {name});
-  return configs;
-}
 
 
 async function commandRun(o, pname) {
@@ -135,8 +75,7 @@ app.post('/service', async (req, res) => {
   if(services[name]) return error.serviceExixts(res, name);
   await fetch({git, url, file}, SERVICEPATH, name);
   var dir = path.join(SERVICEPATH, name);
-  await fs.copyFile(`${__dirname}/scripts/run_python3.sh`, `${dir}/run.sh`); // !!!
-  services[name] = Object.assign(configRead(dir), req.body, configDefault());
+  services[name] = Object.assign(config.read(dir), req.body);
   res.json(services[name]);
 });
 app.delete('/service/:name', async (req, res) => {
@@ -156,7 +95,7 @@ app.get('/service/:name', (req, res) => {
 app.post('/service/:name', (req, res) => {
   var {name} = req.params;
   if(!services[name]) return error.noService(res, name);
-  configWrite(path.join(SERVICEPATH, name), Object.assign(services[name], req.body, {name}));
+  config.write(path.join(SERVICEPATH, name), Object.assign(services[name], req.body, {name}));
   res.json(services[name]);
 });
 app.get('/service/:name/fs/*', (req, res) => {
@@ -177,7 +116,7 @@ app.post('/service/:name/run', async (req, res) => {
   var {name} = req.params, service = services[name];
   if(!service) return error.noService(res, name);
   var pname = name+'.'+dockerNames.getRandomName();
-  var o = configDef(Object.assign(req.body, service));
+  var o = Object.assign(req.body, service);
   var cmd = await commandRun(o, pname);
   console.log({cmd});
   var {stdout, stderr} = await cpExec(cmd);
@@ -185,7 +124,7 @@ app.post('/service/:name/run', async (req, res) => {
   service.processes = service.processes||[];
   service.processes.push(id);
   var spath = path.join(SERVICEPATH, name);
-  configWrite(spath, service);
+  config.write(spath, service);
   res.json(id);
 });
 
@@ -264,7 +203,7 @@ app.get('/os/:fn', (req, res) => {
 
 fs.mkdirSync(SERVICEPATH, {recursive: true});
 fs.mkdirSync(PROCESSPATH, {recursive: true});
-configsRead(SERVICEPATH, services);
+config.readAll(SERVICEPATH, services);
 const server = http.createServer(app);
 server.on('clientError', (err, soc) => {
   soc.end('HTTP/1.1 400 Bad Request\r\n\r\n');
