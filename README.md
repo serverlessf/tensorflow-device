@@ -23,4 +23,23 @@ Device support for small distributed IoT network.
 // active processes, active listeners (ref counting)
 // X readonly mount tensorflow serving, copy mount others
 // X use dockerode for all docker commands
+
+// icon
+// version
+// description
+// scripts
+// repository
+// keywords
+// author
+// license
+// engine
+// main
+// cmd
+// env
+// copyfs
+// mounts
+// ports
+// processes XX
+// give process name
+
 ```

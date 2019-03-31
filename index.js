@@ -8,10 +8,11 @@ const bodyParser = require('body-parser');
 const Docker = require('dockerode');
 const express = require('express');
 const fs = require('fs-extra');
-const cp = require('child_process');
 const http = require('http');
 const path = require('path');
 const os = require('os');
+const {arrayEnsure, cpExec} = require('./util');
+const error = require('./error');
 const fetch = require('./fetch');
 
 
@@ -34,48 +35,11 @@ const docker = new Docker();
 const services = {};
 
 
-
-const errNoService = (res, name) => (
-  res.status(404).json('Cant find service '+name)
-);
-const errServiceExists = (res, name) => (
-  res.status(405).json('Service '+name+' already exists')
-);
-
 const configDefault = () => ({
   engine: 'python:3',
   created: new Date(),
   processes: []
 });
-// icon
-// version
-// description
-// scripts
-// repository
-// keywords
-// author
-// license
-// engine
-// main
-// cmd
-// env
-// copyfs
-// mounts
-// ports
-// processes XX
-// give process name
-
-
-function arrayEnsure(v) {
-  if(v==null) return [];
-  return Array.isArray(v)? v:[v];
-}
-
-function cpExec(cmd, o) {
-  return new Promise((fres, frej) => cp.exec(cmd, o, (err, stdout, stderr) => {
-    return (err? frej:fres)({err, stdout, stderr});
-  }));
-}
 
 
 function configTfServing(o) {
@@ -168,7 +132,7 @@ app.get('/service', (req, res) => {
 app.post('/service', async (req, res) => {
   var {name, git, url} = req.body;
   var file = (req.files||{}).service;
-  if(services[name]) return errServiceExists(res, name);
+  if(services[name]) return error.serviceExixts(res, name);
   await fetch({git, url, file}, SERVICEPATH, name);
   var dir = path.join(SERVICEPATH, name);
   await fs.copyFile(`${__dirname}/scripts/run_python3.sh`, `${dir}/run.sh`); // !!!
@@ -177,7 +141,7 @@ app.post('/service', async (req, res) => {
 });
 app.delete('/service/:name', async (req, res) => {
   var {name} = req.params;
-  if(!services[name]) return errNoService(res, name);
+  if(!services[name]) return error.noService(res, name);
   var jobs = [fs.remove(path.join(SERVICEPATH, name))];
   for(var id of services[name].processes)
     jobs.push(docker.getContainer(id).stop(req.body));
@@ -186,12 +150,12 @@ app.delete('/service/:name', async (req, res) => {
 });
 app.get('/service/:name', (req, res) => {
   var {name} = req.params;
-  if(!services[name]) return errNoService(res, name);
+  if(!services[name]) return error.noService(res, name);
   res.json(services[name]);
 });
 app.post('/service/:name', (req, res) => {
   var {name} = req.params;
-  if(!services[name]) return errNoService(res, name);
+  if(!services[name]) return error.noService(res, name);
   configWrite(path.join(SERVICEPATH, name), Object.assign(services[name], req.body, {name}));
   res.json(services[name]);
 });
@@ -211,7 +175,7 @@ app.post('/service/:name/fs/*', async (req, res) => {
 });
 app.post('/service/:name/run', async (req, res) => {
   var {name} = req.params, service = services[name];
-  if(!service) return errNoService(res, name);
+  if(!service) return error.noService(res, name);
   var pname = name+'.'+dockerNames.getRandomName();
   var o = configDef(Object.assign(req.body, service));
   var cmd = await commandRun(o, pname);
