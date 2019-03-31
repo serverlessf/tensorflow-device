@@ -14,28 +14,6 @@ const os = require('os');
 
 
 
-// think of install
-// think of startup
-// think of query server
-// think of stream server
-// think of supporting more engines
-// think of supporting dbs
-// think of linking componenets with env (singleton?)
-// think of web interface
-// DEVICE, QUERY, SERVICE, PROCESS, PORT, ENV
-// post upon exists -> restart all processes
-// /restart, /stop
-// direct service, process, file access, zip
-// per process env, SERVICE PROCESS PORT
-// service /restart -> all restart
-// read config with defaults and system local (from mem)
-// list service processes
-// list process service
-// how to know if process stopped, crashed
-// events websocket to control server
-// active processes, active listeners (ref counting)
-// readonly mount tensorflow serving, copy mount others
-// use dockerode for all docker commands
 const PORT = '8080';
 const SERVICEPATH = __dirname+'/_data/service';
 const PROCESSPATH = __dirname+'/_data/process';
