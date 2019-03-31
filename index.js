@@ -103,7 +103,7 @@ app.get('/service/:name/fs/*', (req, res) => {
   req.url = req.url.replace(/\/service\/.*?\/fs/, '');
   var done = finalhandler(req, res);
   var {name} = req.params, spath = path.join(SERVICEPATH, name);
-  var index = serveIndex(spath), static = serveStatic(spath);
+  var index = serveIndex(spath, {icons: true}), static = serveStatic(spath);
   static(req, res, (err) => err? done(err):index(req, res, done));
 });
 app.post('/service/:name/fs/*', async (req, res) => {
@@ -121,6 +121,7 @@ app.post('/service/:name/run', async (req, res) => {
   var cmd = await commandRun(o, pname);
   var {stdout, stderr} = await cpExec(cmd);
   var id = (stdout||stderr).trim();
+  if(o.copyfs) await fs.symlink(path.join(PROCESSPATH, pname), path.join(PROCESSPATH, id));
   res.json({id, name: pname});
 });
 
@@ -156,10 +157,10 @@ app.get('/process/:id/export', async (req, res) => {
   stream.pipe(res);
 });
 app.get('/process/:id/fs/*', (req, res) => {
-  req.url = req.url.replace(/\/service\/.*?\/fs/, '');
+  req.url = req.url.replace(/\/process\/.*?\/fs/, '');
   var done = finalhandler(req, res);
-  var {name} = req.params, ppath = path.join(PROCESSPATH, name);
-  var index = serveIndex(ppath), static = serveStatic(ppath);
+  var {id} = req.params, ppath = path.join(PROCESSPATH, id);
+  var index = serveIndex(ppath, {icons: true}), static = serveStatic(ppath);
   static(req, res, (err) => err? done(err):index(req, res, done));
 });
 app.post('/process/:id/fs/*', async (req, res) => {

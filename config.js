@@ -16,7 +16,6 @@ function defaults(o) {
   ARRAYKEYS.forEach(k => { if(typeof o[k]==='string') o[k] = o[k].split(';'); });
   o = Object.assign(DEFAULTS.get((o.engine||DEFAULTENGINE).replace(/\W/g, '_')), o);
   o = Object.assign(DEFAULTS.get('index'), o);
-  o.mounts = o.mounts.map((mount) => mount.replace(/\$\{path\}/g, o.path));
   for(var k in o.env) o.env[k] = o.env[k].replace(/\$\{port\}/g, o.ports[0]);
   o.created = o.created||new Date();
   return o;
