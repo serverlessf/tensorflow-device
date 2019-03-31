@@ -5,8 +5,6 @@ const finalhandler = require('finalhandler');
 const serveStatic = require('serve-static');
 const serveIndex = require('serve-index');
 const bodyParser = require('body-parser');
-const decompress = require('decompress');
-const download = require('download');
 const Docker = require('dockerode');
 const express = require('express');
 const fs = require('fs-extra');
@@ -14,6 +12,7 @@ const cp = require('child_process');
 const http = require('http');
 const path = require('path');
 const os = require('os');
+const fetch = require('./fetch');
 
 
 
@@ -72,60 +71,12 @@ function arrayEnsure(v) {
   return Array.isArray(v)? v:[v];
 }
 
-function pathFilename(p) {
-  var base = path.basename(p).length, ext = path.extname(p).length;
-  return p.substring(p.length-base, p.length-ext);
-}
-
 function cpExec(cmd, o) {
   return new Promise((fres, frej) => cp.exec(cmd, o, (err, stdout, stderr) => {
     return (err? frej:fres)({err, stdout, stderr});
   }));
 }
 
-async function dirDehusk(dir) {
-  var ents = fs.readdirSync(dir, {withFileTypes: true});
-  if(ents.length===0 || ents.length>1 || ents[0].isFile()) return;
-  var temp = dir+'.temp', seed = path.join(temp, ents[0].name);
-  await fs.move(dir, temp);
-  await fs.move(seed, dir);
-  await fs.remove(temp);
-}
-
-async function downloadGit(url, dir, name=null) {
-  var name = name||pathFilename(url);
-  var repo = url.replace(/#.*/, ''), branch = url.substring(repo.length+1)||'master';
-  var cmd = `git clone --single-branch --branch ${branch} --depth=1 ${repo} ${name}`;
-  await cpExec(cmd, {cwd: dir});
-}
-
-async function downloadUrl(url, dir, name=null) {
-  var name = name||pathFilename(url);
-  var pkg = path.join(dir, name);
-  var out = path.join(pkg, path.basename(url));
-  fs.mkdirSync(pkg, {recursive: true});
-  await download(url, pkg, {extract: true});
-  await fs.remove(out);
-  await dirDehusk(pkg);
-}
-
-async function downloadFile(file, dir, name=null) {
-  var name = name||pathFilename(file.name);
-  var pkg = path.join(dir, name);
-  var out = path.join(pkg, path.basename(file.name));
-  fs.mkdirSync(pkg, {recursive: true});
-  await new Promise((fres, frej) => file.mv(out, (err) => err? frej(err):fres()));
-  await decompress(out);
-  await fs.remove(out);
-  await dirDehusk(pkg);
-}
-
-function downloadAny(options, dir, name=null) {
-  var {git, url, file} = options;
-  if(git) return downloadGit(git, dir, name);
-  if(url) return downloadUrl(url, dir, name);
-  return downloadFile(file, dir, name);
-}
 
 function configTfServing(o) {
   o.ports = [8500, 8501];
@@ -179,8 +130,8 @@ function configsRead(dir, configs={}) {
   return configs;
 }
 
-async function commandRun(o) {
-  var pname = o.name+'.'+dockerNames.getRandomName();
+
+async function commandRun(o, pname) {
   var ppath = o.copyfs? path.join(PROCESSPATH, pname):o;
   if(o.copyfs) await fs.copy(o.path, ppath);
   await fs.copy(__dirname+'/scripts/run_python3.sh', path.join(ppath, 'start.sh'));
@@ -218,7 +169,7 @@ app.post('/service', async (req, res) => {
   var {name, git, url} = req.body;
   var file = (req.files||{}).service;
   if(services[name]) return errServiceExists(res, name);
-  await downloadAny({git, url, file}, SERVICEPATH, name);
+  await fetch({git, url, file}, SERVICEPATH, name);
   var dir = path.join(SERVICEPATH, name);
   await fs.copyFile(`${__dirname}/scripts/run_python3.sh`, `${dir}/run.sh`); // !!!
   services[name] = Object.assign(configRead(dir), req.body, configDefault());
@@ -261,8 +212,9 @@ app.post('/service/:name/fs/*', async (req, res) => {
 app.post('/service/:name/run', async (req, res) => {
   var {name} = req.params, service = services[name];
   if(!service) return errNoService(res, name);
+  var pname = name+'.'+dockerNames.getRandomName();
   var o = configDef(Object.assign(req.body, service));
-  var cmd = await commandRun(o);
+  var cmd = await commandRun(o, pname);
   console.log({cmd});
   var {stdout, stderr} = await cpExec(cmd);
   var id = (stdout||stderr).trim();
