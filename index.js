@@ -218,6 +218,19 @@ app.post('/service/:name', (req, res) => {
   configWrite(path.join(SERVICEPATH, name), Object.assign(services[name], req.body, {name}));
   res.json(services[name]);
 });
+app.get('/service/:name/fs/*', (req, res) => {
+  var {name} = req.params;
+  var rel = req.url.replace(/\/service\/.*?\/fs\//, '');
+  var abs = path.join(SERVICEPATH, name, rel);
+  return res.sendFile(abs);
+});
+app.post('/service/:name/fs/*', async (req, res) => {
+  var {name} = req.params, {file} = req.files;
+  var rel = req.url.replace(/\/service\/.*?\/fs\//, '');
+  var abs = path.join(SERVICEPATH, name, rel);
+  await file.mv(abs);
+  res.json(file.size);
+});
 // use copy mount strategy
 app.post('/service/:name/run', async (req, res) => {
   var {name} = req.params;
@@ -262,6 +275,19 @@ app.get('/process/:id/export', async (req, res) => {
   var stream = await docker.getContainer(id).export();
   res.writeHead(200, {'content-type': 'application/x-tar'});
   stream.pipe(res);
+});
+app.get('/process/:id/fs/*', (req, res) => {
+  var {id} = req.params;
+  var rel = req.url.replace(/\/process\/.*?\/fs\//, '');
+  var abs = path.join(PROCESSPATH, id, rel);
+  return res.sendFile(abs);
+});
+app.post('/process/:id/fs/*', async (req, res) => {
+  var {id} = req.params, {file} = req.files;
+  var rel = req.url.replace(/\/service\/.*?\/fs\//, '');
+  var abs = path.join(PROCESSPATH, id, rel);
+  await file.mv(abs);
+  res.json(file.size);
 });
 app.all('/process/:id/:fn', async (req, res) => {
   var {id, fn} = req.params;
