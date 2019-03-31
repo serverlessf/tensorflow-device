@@ -1,5 +1,6 @@
 const fileUpload = require('express-fileupload');
 const findFreePort = require('find-free-port');
+const dockerNames = require('docker-names');
 const bodyParser = require('body-parser');
 const decompress = require('decompress');
 const download = require('download');
@@ -36,9 +37,9 @@ const os = require('os');
 // readonly mount tensorflow serving, copy mount others
 // use dockerode for all docker commands
 const PORT = '8080';
-const SERVICEPATH = __dirname+'/data/service';
-const PROCESSPATH = __dirname+'/data/process';
-const CONFIG = __dirname+'/data/config.json';
+const SERVICEPATH = __dirname+'/_data/service';
+const PROCESSPATH = __dirname+'/_data/process';
+const CONFIG = __dirname+'/_data/config.json';
 const CONFIGFILE = 'config.json';
 // exec
 const OSFN = [
@@ -75,10 +76,10 @@ const configDefault = () => ({
 // keywords
 // author
 // license
+// engine
 // main
 // cmd
 // env
-// readonly
 // copyfs
 // mounts
 // ports
@@ -139,6 +140,42 @@ function downloadAny(dir, name, options) {
   return downloadFile(dir, name, file);
 }
 
+function configTfServing(o) {
+  o.ports = [8500, 8501];
+  o.mounts = ['type=bind,source=${path},target=/models/model'];
+  o.env = o.env||{};
+  o.env['MODEL_NAME'] = 'model';
+  return o;
+};
+
+function configLang(o) {
+  o.copyfs = true;
+  o.ports = o.ports||[8000];
+  o.mounts = ['type=bind,source=${path},target=/usr/src/app'];
+  o.env = o.env||{};
+  o.env['DEVICE'] = `127.0.0.1:${PORT}`;
+  o.env['QUERY'] = `TODO`;
+  o.env['SERVICE'] = o.name;
+  o.env['PROCESS'] = `TODO`;
+  o.env['PORT'] = o.ports[0].toString();
+  o.workdir = o.workdir||'/usr/src/app';
+  o.cmd = o.cmd||['sh', 'start.sh'];
+  return o;
+};
+
+function configDef(o) {
+  const keys = ['ports', 'mounts', 'env', 'cmd'];
+  o.path = path.join(SERVICEPATH, o.name);
+  o.version = o.version||0;
+  o.engine = o.engine||'python:3';
+  for(var k of keys) {
+    var v = o[k]||null;
+    o[k] = typeof v==='string'? v.split(';'):v;
+  }
+  if(o.engine==='tensorflow/serving') return configTfServing(o);
+  return configLang(o);
+};
+
 function configRead(dir) {
   var config = path.join(dir, CONFIGFILE);
   return fs.existsSync(config)? JSON.parse(fs.readFileSync(config, 'utf8')) : {};
@@ -155,41 +192,19 @@ function configsRead(dir, configs={}) {
   return configs;
 }
 
-function configRunOptions(config) {
-  var c = config||{}, o = {};
-  const keys = ['ports', 'mounts', 'env', 'cmd'];
-  o.path = path.join(SERVICEPATH, c.name);
-  o.engine = c.engine||'python:3';
-  for(var k of keys) {
-    var v = c[k]||[];
-    o[k] = typeof v==='string'? v.split(';'):v;
-  }
-  return o;
-};
-
-function optionsTensorflowServing(options) {
-  var o = options||{};
-  o.ports = [8500, 8501];
-  o.mounts = [`type=bind,source=${o.path},target=/models/model`];
-  o.env['MODEL_NAME'] = 'model';
-};
-
-function optionsPython3(options) {
-  var o = options||{};
-  o.ports = o.ports.length? o.ports:[8000];
-  o.mounts = [`type=bind,source=${o.path},target=/usr/src/app`];// !!!
-  o.env['PORT'] = o.ports[0].toString();
-  o.cmd = ['sh', '/usr/src/app/run.sh'];// !!!
-};
-
-async function optionsCommand(options) {
-  var {engine, ports, mounts, env, cmd} = options||{};
-  var freePorts = await findFreePort(1024, 65535, '127.0.0.1', ports.length);
-  var portsStr = ports.reduce((str, port, i) => str+` -p ${freePorts[i]}:${port}`, '');
-  var mountsStr = mounts.reduce((str, mount) => str+` --mount ${mount}`, '');
-  var envStr = Object.keys(env).reduce((str, k) => str+` -e ${k}=${env[k]}`, '');
-  var cmdStr = cmd.join(' ');
-  return `docker run -d ${portsStr} ${mountsStr} ${envStr} -it ${engine} ${cmdStr}`;
+async function commandRun(o) {
+  var pname = o.name+'.'+dockerNames.getRandomName();
+  var ppath = o.copyfs? path.join(PROCESSPATH, pname):o;
+  if(o.copyfs) await fs.copy(o.path, ppath);
+  await fs.copy(__dirname+'/scripts/run_python3.sh', path.join(ppath, 'start.sh'));
+  var workdir = `-w ${o.workdir}`, name = `--name ${pname}`;
+  var freePorts = await findFreePort(1024, 65535, '127.0.0.1', o.ports.length);
+  var ports = o.ports.reduce((str, port, i) => str+` -p ${freePorts[i]}:${port}`, '');
+  var mounts = o.mounts.reduce((str, mount) => str+` --mount ${mount}`, '');
+  var env = Object.keys(o.env).reduce((str, k) => str+` -e ${k}=${o.env[k]}`, '');
+  var image = o.engine, cmd = o.cmd.join(' ');
+  mounts = mounts.replace(/\$\{path\}/g, ppath);
+  return `docker run -d ${workdir} ${name} ${ports} ${mounts} ${env} -it ${image} ${cmd}`;
 };
 
 function commandOptions(options, values=[], exclude=[]) {
@@ -255,23 +270,18 @@ app.post('/service/:name/fs/*', async (req, res) => {
   await file.mv(abs);
   res.json(file.size);
 });
-// use copy mount strategy
 app.post('/service/:name/run', async (req, res) => {
-  var {name} = req.params;
-  if(!services[name]) return errNoService(res, name);
-  var o = configRunOptions(Object.assign(req.body, services[name]));
-  if(o.engine==='tensorflow/serving') optionsTensorflowServing(o);
-  else optionsPython3(o);
-  var cmd = await optionsCommand(o);
+  var {name} = req.params, service = services[name];
+  if(!service) return errNoService(res, name);
+  var o = configDef(Object.assign(req.body, service));
+  var cmd = await commandRun(o);
   console.log({cmd});
   var {stdout, stderr} = await cpExec(cmd);
   var id = (stdout||stderr).trim();
-  var service = services[name];
   service.processes = service.processes||[];
   service.processes.push(id);
   var spath = path.join(SERVICEPATH, name);
   configWrite(spath, service);
-  if(o.engine==='tensorflow/serving') return res.json(id);
   res.json(id);
 });
 

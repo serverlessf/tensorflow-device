@@ -1,5 +1,6 @@
 cd /usr/src/app
-if [ ! -f "pip_install.log" ]; then
-  pip install -r requirements.txt > pip_install.log
+if [ ! -f "pip_install.done" ]; then
+  pip install -r requirements.txt
+  touch pip_install.done
 fi
 python dev.py "$@"

@@ -1,6 +1,6 @@
 {
   "name": "@mycelium/device",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "Device support for small distributed IoT network.",
   "main": "index.js",
   "scripts": {
@@ -28,6 +28,7 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "decompress": "^4.2.0",
+    "docker-names": "^1.1.1",
     "dockerode": "^2.5.8",
     "download": "^7.1.0",
     "express": "^4.16.4",
