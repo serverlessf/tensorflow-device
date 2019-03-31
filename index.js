@@ -199,6 +199,7 @@ app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(500).send('Something broke!')
 })
+app.use(express.static(__dirname+'/assets', {extensions: ['html']}));
 // we are not serving static files yet!
 
 
