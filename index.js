@@ -25,7 +25,6 @@ const OSFN = [
   'loadavg', 'networkInterfaces', 'platform', 'release', 'tmpdir',
   'totalmem', 'type', 'uptime', 'userInfo'
 ];
-const STDIO = [];
 const NOP = () => 0;
 
 const app = express();
@@ -68,20 +67,17 @@ const configDefault = () => ({
 function arrayEnsure(val) {
   if(val==null) return [];
   return Array.isArray(val)? val:[val];
-};
+}
 
 function cpExec(cmd, o) {
-  var o = o||{}, stdio = o.log? o.stdio||STDIO:o.stdio||[];
-  if(o.log) console.log('-cpExec:', cmd);
-  if(o.stdio==null) return Promise.resolve({stdout: cp.execSync(cmd, {stdio}).toString()});
-  return new Promise((fres, frej) => cp.exec(cmd, {stdio}, (err, stdout, stderr) => {
-    return (err? frej:fres)({err, stdout: stdout.toString(), stderr: stderr.toString()});
+  return new Promise((fres, frej) => cp.exec(cmd, o, (err, stdout, stderr) => {
+    return (err? frej:fres)({err, stdout, stderr});
   }));
 }
 
 async function dirDehusk(dir) {
   var ents = fs.readdirSync(dir, {withFileTypes: true});
-  if(ents.length>1 || ents[0].isFile()) return;
+  if(ents.length===0 || ents.length>1 || ents[0].isFile()) return;
   var temp = dir+'.temp', seed = path.join(temp, ents[0].name);
   await fs.move(dir, temp);
   await fs.move(seed, dir);
@@ -89,7 +85,10 @@ async function dirDehusk(dir) {
 };
 
 function downloadGit(dir, name, url) {
-  return cpExec(`git clone --depth=1 ${url} ${name}`, {cwd: dir});
+  // https://github.com/org/repo#branch
+  var repo = url.replace(/#.*/, ''), branch = url.replace(/.*?#/, '')||'master';
+  var cmd = `git clone --single-branch --branch ${branch} --depth=1 ${repo} ${name}`;
+  return cpExec(cmd, {cwd: dir});
 }
 
 async function downloadUrl(dir, name, url) {
