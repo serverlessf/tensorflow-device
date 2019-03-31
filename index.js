@@ -1,6 +1,9 @@
 const fileUpload = require('express-fileupload');
 const findFreePort = require('find-free-port');
 const dockerNames = require('docker-names');
+const finalhandler = require('finalhandler');
+const serveStatic = require('serve-static');
+const serveIndex = require('serve-index');
 const bodyParser = require('body-parser');
 const decompress = require('decompress');
 const download = require('download');
@@ -242,10 +245,11 @@ app.post('/service/:name', (req, res) => {
   res.json(services[name]);
 });
 app.get('/service/:name/fs/*', (req, res) => {
-  var {name} = req.params;
-  var rel = req.url.replace(/\/service\/.*?\/fs\//, '');
-  var abs = path.join(SERVICEPATH, name, rel);
-  return res.sendFile(abs);
+  req.url = req.url.replace(/\/service\/.*?\/fs/, '');
+  var done = finalhandler(req, res);
+  var {name} = req.params, spath = path.join(SERVICEPATH, name);
+  var index = serveIndex(spath), static = serveStatic(spath);
+  static(req, res, (err) => err? done(err):index(req, res, done));
 });
 app.post('/service/:name/fs/*', async (req, res) => {
   var {name} = req.params, {file} = req.files;
@@ -301,10 +305,11 @@ app.get('/process/:id/export', async (req, res) => {
   stream.pipe(res);
 });
 app.get('/process/:id/fs/*', (req, res) => {
-  var {id} = req.params;
-  var rel = req.url.replace(/\/process\/.*?\/fs\//, '');
-  var abs = path.join(PROCESSPATH, id, rel);
-  return res.sendFile(abs);
+  req.url = req.url.replace(/\/service\/.*?\/fs/, '');
+  var done = finalhandler(req, res);
+  var {name} = req.params, ppath = path.join(PROCESSPATH, name);
+  var index = serveIndex(ppath), static = serveStatic(ppath);
+  static(req, res, (err) => err? done(err):index(req, res, done));
 });
 app.post('/process/:id/fs/*', async (req, res) => {
   var {id} = req.params, {file} = req.files;
