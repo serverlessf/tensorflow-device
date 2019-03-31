@@ -7,7 +7,7 @@ function cpExec(cmd, o) {
 }
 
 async function main() {
-  var ans = await cpExec('ls');
+  var ans = await downloadGit('/tmp', 'testgit2', 'https://github.com/iiithf/ias-carevaluation');
   console.log(ans);
 };
 main();

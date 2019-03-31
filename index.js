@@ -85,8 +85,7 @@ async function dirDehusk(dir) {
 };
 
 function downloadGit(dir, name, url) {
-  // https://github.com/org/repo#branch
-  var repo = url.replace(/#.*/, ''), branch = url.replace(/.*?#/, '')||'master';
+  var repo = url.replace(/#.*/, ''), branch = url.substring(repo.length+1)||'master';
   var cmd = `git clone --single-branch --branch ${branch} --depth=1 ${repo} ${name}`;
   return cpExec(cmd, {cwd: dir});
 }
