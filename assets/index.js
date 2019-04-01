@@ -25,10 +25,10 @@ async function serviceRefresh() {
 async function processRefresh() {
   if(section!=='process') return;
   var tbody = document.querySelector('#process tbody');
-  var cs = await m.request({method: 'GET', url: '/process'});
+  var cs = await m.request({method: 'GET', url: '/process?all=1'});
   m.render(tbody, cs.map(c => m('tr', [
     m('td', c.Id.substring(0, 12)), m('td', c.Names[0].substring(1)),
-    m('td', c.Image), m('td', c.Status), m('td', c.Ports.map(p => (
+    m('td', c.Status), m('td', c.Ports.map(p => (
     m('tag', `${p.PublicPort}->${p.PrivatePort}/${p.Type}`)
   )))])));
 };
