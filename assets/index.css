@@ -32,6 +32,12 @@ body.os #a_os {
   color: blueviolet;
   border-color: blueviolet;
 }
+
+#shell_stderr {
+  border-left-color: darkorange;
+}
+
+
 table {
   margin-top: 4rem;
 }

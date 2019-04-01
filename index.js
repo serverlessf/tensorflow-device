@@ -179,10 +179,9 @@ app.all('/process/:id/:fn', async (req, res) => {
 });
 
 
-app.post('/shell', async (req, res) => {
-  var {command} = req.body;
-  var {stdout, stderr} = await cpExec(command);
-  res.json({stdout, stderr});
+app.post('/shell', (req, res) => {
+  var {cmd} = req.body;
+  cpExec(cmd).then(o => res.json(o), o => res.json(o));
 });
 app.get('/os', (req, res) => {
   var out = {};

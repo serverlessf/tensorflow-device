@@ -9,6 +9,18 @@ function onHashChange() {
 
 
 
+async function shell() {
+  var cmd = document.querySelector('#shell input').value;
+  console.log(`shell(${cmd})`);
+  var o = await m.request({method: 'POST', url: '/shell', data: {cmd}});
+  var stdout = document.querySelector('#shell_stdout');
+  var stderr = document.querySelector('#shell_stderr');
+  console.log(o);
+  m.render(stdout, o.stdout);
+  m.render(stderr, o.stderr);
+};
+
+
 function osDevice(o) {
   var tbody = document.querySelector('#os_device tbody');
   var ks = ['arch', 'endianness', 'hostname', 'platform', 'release', 'type', 'uptime', 'tmpdir'];
@@ -55,6 +67,9 @@ async function osRefresh() {
   osNetworkInterfaces(o);
 }
 
+
+
 osRefresh();
 setInterval(osRefresh, 1000);
 window.onhashchange = onHashChange;
+document.querySelector('#shell form').onsubmit = () => shell() && false;
