@@ -1,0 +1,41 @@
+body, form * {
+  font-family: 'Baloo Chettan', cursive;
+}
+body section {
+  display: none;
+}
+body.service #service {
+  display: block;
+}
+body.process #process {
+  display: block;
+}
+body.shell #shell {
+  display: block;
+}
+body.os #os {
+  display: block;
+}
+body.service #a_service {
+  color: blueviolet;
+  border-color: blueviolet;
+}
+body.process #a_process {
+  color: blueviolet;
+  border-color: blueviolet;
+}
+body.shell #a_shell {
+  color: blueviolet;
+  border-color: blueviolet;
+}
+body.os #a_os {
+  color: blueviolet;
+  border-color: blueviolet;
+}
+table {
+  margin-top: 4rem;
+}
+table:not([class]) > caption {
+  font-weight: bolder;
+  font-size: 2rem;
+}

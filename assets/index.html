@@ -2,9 +2,12 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" type="image/png" href="https://cdn3.iconfinder.com/data/icons/restaurant-volume-2/512/mushroom-512.png">
+<link href="https://fonts.googleapis.com/css?family=Baloo+Chettan" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/barecss@1.1.1/css/bare.min.css">
+<script src="https://unpkg.com/mithril/mithril.js"></script>
 <link rel="stylesheet" href="index.css">
-<script src="index.js"></script>
+<script async src="index.js"></script>
 <title>DEVICE</title>
 </head>
 
@@ -14,20 +17,110 @@
 <nav>
 <label>
   <input type="checkbox">
-  <header><a><img src="img/bareCSS.svg"> Title</a></header>
+  <header><a><img src="https://cdn3.iconfinder.com/data/icons/restaurant-volume-2/512/mushroom-512.png"> DEVICE</a></header>
   <ul>
-    <li><a href="index.html">Home</a></li>
-    <li><a href="about.html">About</a></li>
+    <li><a id="a_service" href="#service">Service</a></li>
+    <li><a id="a_process" href="#process">Process</a></li>
+    <li><a id="a_shell" href="#shell">Shell</a></li>
+    <li><a id="a_os" href="#os" active>OS</a></li>
     <li>
-      <a>Dropdown</a>
+      <a>Help</a>
       <menu>
-        <menuitem><a href="#">Item one</a></menuitem>
-        <menuitem><a href="#">Item two</a></menuitem>
+        <menuitem><a href="https://www.youtube.com/watch?v=GNKeps6pIao">Making Activated Carbon</a></menuitem>
+        <menuitem><a href="https://www.youtube.com/watch?v=s5PwfEqTMyg">How To Grow Microgreens</a></menuitem>
       </menu>
     </li>
   </ul>
 </label>
 </nav>
+
+
+<main>
+
+
+<section id="shell">
+<form id="shell_form">
+  <label>Execute shell command</label>
+  <input type="text" placeholder="e.g. uptime">
+</form>
+<pre><code id="shell_stdout"></code></pre>
+</section>
+
+<section id="os">
+<table id="os_device">
+  <caption>Device</caption>
+  <thead>
+  <tr>
+    <th>Arch</th>
+    <th>Endianness</th>
+    <th>Hostname</th>
+    <th>Platform</th>
+    <th>Release</th>
+    <th>Type</th>
+    <th>Uptime</th>
+    <th>Tmpdir</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="os_status">
+  <caption>Status</caption>
+  <thead>
+  <tr>
+    <th>Load avg</th>
+    <th>Total mem</th>
+    <th>Free mem</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="os_userInfo">
+  <caption>User Info</caption>
+  <thead>
+  <tr>
+    <th>UID</th>
+    <th>GID</th>
+    <th>Username</th>
+    <th>Homedir</th>
+    <th>Shell</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="os_cpus">
+  <caption>CPUs</caption>
+  <thead>
+  <tr>
+    <th>Model</th>
+    <th>Speed</th>
+    <th>Times</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="os_networkInterfaces">
+  <caption>Network Interfaces</caption>
+  <thead>
+  <tr>
+    <th>Address</th>
+    <th>Netmask</th>
+    <th>Family</th>
+    <th>MAC</th>
+    <th>Internal</th>
+    <th>CIDR</th>
+    <th>Scope ID</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+</section>
+</main>
+
 
 </body>
 </html>
