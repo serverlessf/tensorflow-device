@@ -8,6 +8,30 @@ function onHashChange() {
 }
 
 
+async function serviceRefresh() {
+  if(section!=='service') return;
+  var tbody = document.querySelector('#service tbody');
+  var ssp = m.request({method: 'GET', url: '/service'});
+  var csp = m.request({method: 'GET', url: '/process'});
+  var [ss, cs] = await Promise.all([ssp, csp]);
+  for(var k in ss) ss[k].processes = 0;
+  cs.forEach(c => ss[c.Names[0].substring(1).replace(/\..*$/, '')].processes++);
+  m.render(tbody, Object.values(ss).map(s => m('tr', [
+    m('td', s.name), m('td', s.version), m('td', s.engine),
+    m('td', s.processes), m('td', s.ports.map(p => m('tag', p)))])));
+};
+
+
+async function processRefresh() {
+  if(section!=='process') return;
+  var tbody = document.querySelector('#process tbody');
+  var cs = await m.request({method: 'GET', url: '/process'});
+  m.render(tbody, cs.map(c => m('tr', [
+    m('td', c.Id.substring(0, 12)), m('td', c.Names[0].substring(1)),
+    m('td', c.Image), m('td', c.Status), m('td', c.Ports.map(p => (
+    m('tag', `${p.PublicPort}->${p.PrivatePort}/${p.Type}`)
+  )))])));
+};
 
 async function shell() {
   var cmd = document.querySelector('#shell input').value;
@@ -15,7 +39,6 @@ async function shell() {
   var o = await m.request({method: 'POST', url: '/shell', data: {cmd}});
   var stdout = document.querySelector('#shell_stdout');
   var stderr = document.querySelector('#shell_stderr');
-  console.log(o);
   m.render(stdout, o.stdout);
   m.render(stderr, o.stderr);
 };
@@ -69,6 +92,10 @@ async function osRefresh() {
 
 
 
+serviceRefresh();
+setInterval(serviceRefresh, 1000);
+processRefresh();
+setInterval(processRefresh, 1000);
 osRefresh();
 setInterval(osRefresh, 1000);
 window.onhashchange = onHashChange;
