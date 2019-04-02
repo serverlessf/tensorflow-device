@@ -14,8 +14,8 @@ const path = require('path');
 
 
 const REFS = /\/service\/.*?\/fs/;
-const ROOT = __dirname+'/_data/service';
-const PROOT = __dirname+'/_data/process';
+const ROOT = process.cwd()+'/_data/service';
+const PROOT = process.cwd()+'/_data/process';
 
 const app = express();
 const docker = new Docker();

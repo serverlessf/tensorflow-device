@@ -11,7 +11,7 @@ const path = require('path');
 
 
 const REFS = /\/process\/.*?\/fs/;
-const ROOT = __dirname+'/_data/process';
+const ROOT = process.cwd()+'/_data/process';
 
 const app = express();
 const docker = new Docker();

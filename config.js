@@ -3,9 +3,10 @@ const fs = require('fs');
 
 
 
+const ROOT = path.dirname(require.main.filename);
 const CONFIGFILE = 'config.json';
 const ARRAYKEYS = ['ports', 'mounts', 'env', 'cmd'];
-const DEFAULTPATH = path.join(__dirname, 'config');
+const DEFAULTPATH = path.join(ROOT, 'config');
 const DEFAULTENGINE = 'python:3';
 const DEFAULTS = new Map();
 const NOP = () => 0;
