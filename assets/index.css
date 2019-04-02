@@ -10,6 +10,9 @@ body.service #service {
 body.process #process {
   display: block;
 }
+body.process_details #process_details {
+  display: block;
+}
 body.shell #shell {
   display: block;
 }

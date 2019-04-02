@@ -2,10 +2,23 @@ var section = location.hash.substring(1)||'os';
 document.body.className = section;
 
 
+
+function infoPortBinding(o, k) {
+  return `${o[k][0].HostPort}->${k}`;
+};
+
+function infoMount(o) {
+  var out = `${o.Type},source=${o.Source},target=${o.Destination}`;
+  return o.RW? out:out+',readonly';
+};
+
+
+
 function onHashChange() {
   section = location.hash.substring(1);
   document.body.className = section;
 }
+
 
 
 async function serviceRefresh() {
@@ -19,7 +32,8 @@ async function serviceRefresh() {
   m.render(tbody, Object.values(ss).map(s => m('tr', [
     m('td', s.name), m('td', s.version), m('td', s.engine),
     m('td', s.processes), m('td', s.ports.map(p => m('tag', p)))])));
-};
+}
+
 
 
 async function processRefresh() {
@@ -31,7 +45,31 @@ async function processRefresh() {
     m('td', c.Status), m('td', c.Ports.map(p => (
     m('tag', `${p.PublicPort}->${p.PrivatePort}/${p.Type}`)
   )))])));
-};
+}
+
+async function processDetails(id) {
+  var tbody = document.querySelector('#process_details tbody');
+  var p = await m.request({method: 'GET', url: '/process/'+id});
+  var s = p.State, hc = p.HostConfig, c = p.Config;
+  var rp = hc.RestartPolicy, pb = hc.PortBindings;
+  m.render(tbody, [
+    ['ID', p.Id], ['Name', p.Name], ['Engine', c.Image],
+    ['Status', `${s.Status} (${s.ExitCode}) ${s.Error}`],
+    ['Created', moment(p.Created).fromNow()],
+    ['Started', moment(s.StartedAt).fromNow()],
+    ['Finished', moment(p.FinishedAt).fromNow()],
+    ['Restarts', p.RestartCount],
+    ['Restart Policy', `${rp.Name} (max: ${rp.MaximumRetryCount})`],
+    ['Priviledged', hc.Priviledged],
+    ['Working Dir', c.WorkingDir],
+    ['Port Bindings', Object.keys(pb).map(k => m('tag', infoPortBinding(pb, k)))],
+    ['Mounts', p.Mounts.map(v => m('tag', infoMount(v)))],
+    ['Cmd', c.Cmd.map(v => `"${v}"`).join(' ')],
+    ['Env', c.Env.map(v => m('tag', v))]
+  ].map(tr => m('tr', [m('td', tr[0]), m('td', tr[1])])));
+}
+
+
 
 async function shell() {
   var cmd = document.querySelector('#shell input').value;
@@ -41,7 +79,8 @@ async function shell() {
   var stderr = document.querySelector('#shell_stderr');
   m.render(stdout, o.stdout);
   m.render(stderr, o.stderr);
-};
+}
+
 
 
 function osDevice(o) {
@@ -92,6 +131,7 @@ async function osRefresh() {
 
 
 
+processDetails('32d3362081349c64cfd3360ff340b58e283b7b8c3f69d07394265d83ebd76905');
 serviceRefresh();
 setInterval(serviceRefresh, 1000);
 processRefresh();
