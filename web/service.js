@@ -23,6 +23,9 @@ const services = {};
 
 const errNoService = (res, name) => res.status(404).json('Cant find service '+name);
 const errServiceExists = (res, name) => res.status(405).json('Service '+name+' already exists');
+const wrap = (fn) => ((req, res, next) => (
+  fn(req, res, next).then(null, next)
+));
 
 
 
@@ -49,7 +52,7 @@ app.use((req, res, next) => { Object.assign(req.body, req.query); next(); });
 app.get('/service', (req, res) => {
   res.json(services);
 });
-app.post('/service', async (req, res) => {
+app.post('/service', wrap(async (req, res) => {
   var {name, git, url} = req.body;
   var file = (req.files||{}).service;
   name = name||path.parse(git||url||file.name).name;
@@ -58,8 +61,8 @@ app.post('/service', async (req, res) => {
   var dir = path.join(ROOT, name);
   services[name] = Object.assign({name}, config.read(dir), req.body, {name});
   res.json(services[name]);
-});
-app.delete('/service/:name', async (req, res) => {
+}));
+app.delete('/service/:name', wrap(async (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
   var jobs = [fs.remove(path.join(ROOT, name))];
@@ -68,7 +71,7 @@ app.delete('/service/:name', async (req, res) => {
     jobs.push(docker.getContainer(c.Id).stop(req.body));
   await Promise.all(jobs);
   res.json(services[name] = null);
-});
+}));
 app.get('/service/:name', (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
@@ -87,14 +90,14 @@ app.get('/service/:name/fs*', (req, res) => {
   var index = serveIndex(spath, {icons: true}), static = serveStatic(spath);
   static(req, res, (err) => err? done(err):index(req, res, done));
 });
-app.post('/service/:name/fs*', async (req, res) => {
+app.post('/service/:name/fs*', wrap(async (req, res) => {
   var {name} = req.params, {file} = req.files;
   var rel = req.url.replace(REFS, '')||'/';
   var abs = path.join(ROOT, name, rel);
   await file.mv(abs);
   res.json(file.size);
-});
-app.post('/service/:name/run', async (req, res) => {
+}));
+app.post('/service/:name/run', wrap(async (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
   var pname = name+'.'+dockerNames.getRandomName();
@@ -104,7 +107,7 @@ app.post('/service/:name/run', async (req, res) => {
   var id = (stdout||stderr).trim();
   if(o.copyfs) await fs.symlink(path.join(ROOT, pname), path.join(PROCESSROOT, id));
   res.json({id, name: pname});
-});
+}));
 fs.mkdirSync(ROOT, {recursive: true});
 config.readAll(ROOT, services);
 module.exports = app;
