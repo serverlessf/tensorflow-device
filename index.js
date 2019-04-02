@@ -16,6 +16,8 @@ const http = require('http');
 const path = require('path');
 const webexec = require('./web/exec');
 const webos = require('./web/os');
+const webprocess = require('./web/process');
+
 
 
 const PORT = '8080';
@@ -121,58 +123,7 @@ app.post('/service/:name/run', async (req, res) => {
 
 
 // use status code?
-app.get('/process', async (req, res) => {
-  var options = req.body, filters = (options||{}).filters||{};
-  for(var k in filters)
-    filters[k] = arrayEnsure(filters[k]);
-  var data = await docker.listContainers(options);
-  res.json(data);
-});
-app.get('/process/:id', async (req, res) => {
-  var {id} = req.params, options = req.body;
-  var data = await docker.getContainer(id).inspect(options);
-  res.json(data);
-});
-app.delete('/process/:id', async (req, res) => {
-  var {id} = req.params, options = req.body;
-  await docker.getContainer(id).stop(options);
-  res.json(null);
-});
-app.post('/process/:id/exec', async (req, res) => {
-  var {id} = req.params, options = req.body||{}, cmd = options.cmd||'';
-  var opts = commandOptions(req.body, [], ['cmd'])
-  var {stdout, stderr} = await cpExec(`docker exec ${opts} ${id} ${cmd}`);
-  res.json({stdout, stderr});
-});
-app.get('/process/:id/export', async (req, res) => {
-  var {id} = req.params;
-  var stream = await docker.getContainer(id).export();
-  res.writeHead(200, {'content-type': 'application/x-tar'});
-  stream.pipe(res);
-});
-app.get('/process/:id/fs*', (req, res) => {
-  req.url = req.url.replace(/\/process\/.*?\/fs/, '')||'/';
-  var done = finalhandler(req, res);
-  var {id} = req.params, ppath = path.join(PROCESSPATH, id);
-  var index = serveIndex(ppath, {icons: true}), static = serveStatic(ppath);
-  static(req, res, (err) => err? done(err):index(req, res, done));
-});
-app.post('/process/:id/fs*', async (req, res) => {
-  var {id} = req.params, {file} = req.files;
-  var rel = req.url.replace(/\/service\/.*?\/fs\//, '')||'/';
-  var abs = path.join(PROCESSPATH, id, rel);
-  await file.mv(abs);
-  res.json(file.size);
-});
-app.all('/process/:id/:fn', async (req, res) => {
-  var {id, fn} = req.params;
-  var options = ['changes'].includes(fn)? undefined:req.body;
-  var data = await docker.getContainer(id)[fn](options);
-  if(fn==='logs') res.send(data);
-  else res.json(data);
-});
-
-
+app.use('/process', webprocess);
 app.use('/exec', webexec);
 app.use('/os', webos);
 app.use((err, req, res, next) => {
