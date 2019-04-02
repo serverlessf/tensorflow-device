@@ -131,7 +131,7 @@ async function osRefresh() {
 
 
 
-processDetails('32d3362081349c64cfd3360ff340b58e283b7b8c3f69d07394265d83ebd76905');
+processDetails('carevaluation.admiring_brahmagupta');
 serviceRefresh();
 setInterval(serviceRefresh, 1000);
 processRefresh();

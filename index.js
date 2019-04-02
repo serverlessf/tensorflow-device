@@ -99,16 +99,16 @@ app.post('/service/:name', (req, res) => {
   config.write(path.join(SERVICEPATH, name), Object.assign(services[name], req.body, {name}));
   res.json(services[name]);
 });
-app.get('/service/:name/fs/*', (req, res) => {
-  req.url = req.url.replace(/\/service\/.*?\/fs/, '');
+app.get('/service/:name/fs*', (req, res) => {
+  req.url = req.url.replace(/\/service\/.*?\/fs/, '')||'/';
   var done = finalhandler(req, res);
   var {name} = req.params, spath = path.join(SERVICEPATH, name);
   var index = serveIndex(spath, {icons: true}), static = serveStatic(spath);
   static(req, res, (err) => err? done(err):index(req, res, done));
 });
-app.post('/service/:name/fs/*', async (req, res) => {
+app.post('/service/:name/fs*', async (req, res) => {
   var {name} = req.params, {file} = req.files;
-  var rel = req.url.replace(/\/service\/.*?\/fs\//, '');
+  var rel = req.url.replace(/\/service\/.*?\/fs\//, '')||'/';
   var abs = path.join(SERVICEPATH, name, rel);
   await file.mv(abs);
   res.json(file.size);
@@ -156,16 +156,16 @@ app.get('/process/:id/export', async (req, res) => {
   res.writeHead(200, {'content-type': 'application/x-tar'});
   stream.pipe(res);
 });
-app.get('/process/:id/fs/*', (req, res) => {
-  req.url = req.url.replace(/\/process\/.*?\/fs/, '');
+app.get('/process/:id/fs*', (req, res) => {
+  req.url = req.url.replace(/\/process\/.*?\/fs/, '')||'/';
   var done = finalhandler(req, res);
   var {id} = req.params, ppath = path.join(PROCESSPATH, id);
   var index = serveIndex(ppath, {icons: true}), static = serveStatic(ppath);
   static(req, res, (err) => err? done(err):index(req, res, done));
 });
-app.post('/process/:id/fs/*', async (req, res) => {
+app.post('/process/:id/fs*', async (req, res) => {
   var {id} = req.params, {file} = req.files;
-  var rel = req.url.replace(/\/service\/.*?\/fs\//, '');
+  var rel = req.url.replace(/\/service\/.*?\/fs\//, '')||'/';
   var abs = path.join(PROCESSPATH, id, rel);
   await file.mv(abs);
   res.json(file.size);
