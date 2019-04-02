@@ -58,7 +58,7 @@
   <thead>
   <tr>
     <th>ID</th>
-    <th>Name</th>
+    <th>Engine</th>
     <th>Status</th>
     <th>Ports</th>
   </tr>
@@ -69,21 +69,65 @@
 </section>
 
 <section id="process_details">
+  <h2></h2>
   <form>
     <a btn href="/process/carevaluation.admiring_brahmagupta/fs/">File System</a>
     <a btn href="/process/carevaluation.admiring_brahmagupta/fs/">Upload to File System</a>
   </form>
-  <table>
+  <table id="process_status">
+    <caption>State</caption>
     <thead>
     <tr>
-      <th>Key</th>
+      <th>Status</th>
+      <th>Created</th>
+      <th>Finished</th>
+      <th>Restarts</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <table id="process_policy">
+    <caption>Policy</caption>
+    <thead>
+    <tr>
+      <th>Working Dir</th>
+      <th>Port Bindings</th>
+      <th>Restart</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <table id="process_mounts">
+    <caption>Mounts</caption>
+    <thead>
+    <tr>
+      <th>Type</th>
+      <th>Source</th>
+      <th>Destination</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <table id="process_env">
+    <caption>Env</caption>
+    <thead>
+    <tr>
+      <th>Variable</th>
       <th>Value</th>
     </tr>
     </thead>
     <tbody>
     </tbody>
   </table>
-  </section>
+  <table id="process_cmd">
+    <caption>Cmd</caption>
+    <tbody>
+    </tbody>
+  </table>
+</section>
   
 <section id="shell">
 <form>

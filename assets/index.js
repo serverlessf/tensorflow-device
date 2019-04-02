@@ -1,5 +1,5 @@
-var section = location.hash.substring(1)||'os';
-document.body.className = section;
+var hash = location.hash.substring(1)||'os';
+document.body.className = hash;
 
 
 
@@ -15,14 +15,15 @@ function infoMount(o) {
 
 
 function onHashChange() {
-  section = location.hash.substring(1);
-  document.body.className = section;
+  hash = location.hash.substring(1);
+  document.body.className = hash.replace(/_.*/, '_details');
+  if(hash.startsWith('process_')) processDetails(hash.substring(8));
 }
 
 
 
 async function serviceRefresh() {
-  if(section!=='service') return;
+  if(hash!=='service') return;
   var tbody = document.querySelector('#service tbody');
   var ssp = m.request({method: 'GET', url: '/service'});
   var csp = m.request({method: 'GET', url: '/process'});
@@ -37,36 +38,51 @@ async function serviceRefresh() {
 
 
 async function processRefresh() {
-  if(section!=='process') return;
+  if(hash!=='process') return;
   var tbody = document.querySelector('#process tbody');
   var cs = await m.request({method: 'GET', url: '/process?all=1'});
   m.render(tbody, cs.map(c => m('tr', [
-    m('td', c.Id.substring(0, 12)), m('td', c.Names[0].substring(1)),
-    m('td', c.Status), m('td', c.Ports.map(p => (
+    m('td', m('a', {href: '#process_'+c.Names[0].substr(1)}, c.Names[0].substr(1))),
+    m('td', c.Image), m('td', c.Status), m('td', c.Ports.map(p => (
     m('tag', `${p.PublicPort}->${p.PrivatePort}/${p.Type}`)
   )))])));
 }
 
 async function processDetails(id) {
-  var tbody = document.querySelector('#process_details tbody');
+  var h2 = document.querySelector('#process_details h2');
+  var pstatus = document.querySelector('#process_status tbody');
+  var ppolicy = document.querySelector('#process_policy tbody');
+  var pmounts = document.querySelector('#process_mounts tbody');
+  var penv = document.querySelector('#process_env tbody');
+  var pcmd = document.querySelector('#process_cmd tbody');
   var p = await m.request({method: 'GET', url: '/process/'+id});
   var s = p.State, hc = p.HostConfig, c = p.Config;
   var rp = hc.RestartPolicy, pb = hc.PortBindings;
-  m.render(tbody, [
-    ['ID', p.Id], ['Name', p.Name], ['Engine', c.Image],
-    ['Status', `${s.Status} (${s.ExitCode}) ${s.Error}`],
-    ['Created', moment(p.Created).fromNow()],
-    ['Started', moment(s.StartedAt).fromNow()],
-    ['Finished', moment(p.FinishedAt).fromNow()],
-    ['Restarts', p.RestartCount],
-    ['Restart Policy', `${rp.Name} (max: ${rp.MaximumRetryCount})`],
-    ['Priviledged', hc.Priviledged],
-    ['Working Dir', c.WorkingDir],
-    ['Port Bindings', Object.keys(pb).map(k => m('tag', infoPortBinding(pb, k)))],
-    ['Mounts', p.Mounts.map(v => m('tag', infoMount(v)))],
-    ['Cmd', c.Cmd.map(v => `"${v}"`).join(' ')],
-    ['Env', c.Env.map(v => m('tag', v))]
-  ].map(tr => m('tr', [m('td', tr[0]), m('td', tr[1])])));
+  m.render(h2, [p.Name.substring(1), m('div', m('small', c.Image))]);
+  m.render(pstatus, m('tr', [
+    m('td', `${s.Status} (${s.ExitCode}) ${s.Error}`),
+    m('td', moment(p.Created).fromNow()),
+    m('td', moment(s.StartedAt).fromNow()),
+    m('td', p.RestartCount),
+  ]));
+  m.render(ppolicy, m('tr', [
+    m('td', c.WorkingDir),
+    m('td', Object.keys(pb).map(k => m('tag', infoPortBinding(pb, k)))),
+    m('td', `${rp.Name} (max: ${rp.MaximumRetryCount})`),
+  ]));
+  m.render(pmounts, p.Mounts.map(v => m('tr', [
+    m('td', v.Type), m('td', v.Source), m('td', v.Destination),
+  ])));
+  m.render(penv, c.Env.map(v => m('tr', [
+    m('td', v.split('=')[0]), m('td', v.split('=')[1]),
+  ])));
+  m.render(pcmd, c.Cmd.map(v => m('tr', m('td',
+    m('pre', v.replace(/;\s*/g, ';\n')
+  )))));
+  // [
+  //   ['Cmd', c.Cmd.map(v => `"${v}"`).join(' ')],
+  //   ['Env', c.Env.map(v => m('tag', v))]
+  // ].map(tr => m('tr', [m('td', tr[0]), m('td', tr[1])])));
 }
 
 
@@ -119,7 +135,7 @@ function osNetworkInterfaces(o) {
 }
 
 async function osRefresh() {
-  if(section!=='os') return;
+  if(hash!=='os') return;
   console.log('osRefresh()');
   var o = await m.request({method: 'GET', url: '/os'});
   osDevice(o);
@@ -131,7 +147,7 @@ async function osRefresh() {
 
 
 
-processDetails('carevaluation.admiring_brahmagupta');
+onHashChange();
 serviceRefresh();
 setInterval(serviceRefresh, 1000);
 processRefresh();

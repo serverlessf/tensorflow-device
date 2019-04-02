@@ -1,3 +1,7 @@
+h1, h2 {
+  text-align: center;
+}
+
 body, form * {
   font-family: 'Baloo Chettan', cursive;
 }
@@ -47,4 +51,9 @@ table {
 table:not([class]) > caption {
   font-weight: bolder;
   font-size: 2rem;
+}
+table:not([class]) pre {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1.4rem;
 }
