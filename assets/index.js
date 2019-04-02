@@ -1,23 +1,32 @@
-var hash = location.hash.substring(1)||'os';
+var service = '', process = '';
+var hash = location.hash.substring(1)||'os', hashid = '';
+var top = false;
 document.body.className = hash;
 
 
 
+const processTop = () => document.body.classList.toggle('process_top');
+
 function infoPortBinding(o, k) {
   return `${o[k][0].HostPort}->${k}`;
-};
+}
 
-function infoMount(o) {
-  var out = `${o.Type},source=${o.Source},target=${o.Destination}`;
-  return o.RW? out:out+',readonly';
-};
+function infoMount(str) {
+  var out = {};
+  for(var ln of str.split(',')) {
+    var [k, v] = ln.split('=');
+    out[k] = v||true;
+  }
+  return out;
+}
 
 
 
 function onHashChange() {
   hash = location.hash.substring(1);
-  document.body.className = hash.replace(/_.*/, '_details');
-  if(hash.startsWith('process_')) processDetails(hash.substring(8));
+  hashid = hash.replace(/.*?_/, '');
+  service = '/service/'+hashid; process = '/process/'+hashid;
+  document.body.className = hash.replace(/_.*/, '_data');
 }
 
 
@@ -31,8 +40,39 @@ async function serviceRefresh() {
   for(var k in ss) ss[k].processes = 0;
   cs.forEach(c => ss[c.Names[0].substring(1).replace(/\..*$/, '')].processes++);
   m.render(tbody, Object.values(ss).map(s => m('tr', [
-    m('td', s.name), m('td', s.version), m('td', s.engine),
-    m('td', s.processes), m('td', s.ports.map(p => m('tag', p)))])));
+    m('td', m('a', {href: '#service_'+s.name}, s.name)),
+    m('td', s.version), m('td', s.engine), m('td', s.processes),
+    m('td', s.ports.map(p => m('tag', p)))])));
+}
+
+async function serviceData() {
+  if(!hash.startsWith('service_')) return;
+  var id = hash.substring(8);
+  var h2 = document.querySelector('#service_data h2');
+  var status = document.querySelector('#service_status tbody');
+  var policy = document.querySelector('#service_policy tbody');
+  var mounts = document.querySelector('#service_mounts tbody');
+  var env = document.querySelector('#service_env tbody');
+  var cmd = document.querySelector('#service_cmd tbody');
+  var s = await m.request({method: 'GET', url: '/service/'+id});
+  m.render(h2, [s.name, m('div', m('small', s.engine))]);
+  m.render(status, m('tr', [
+    m('td', moment(s.created).fromNow()),
+  ]));
+  m.render(policy, m('tr', [
+    m('td', s.workdir),
+    m('td', s.ports.map(v => m('tag', v))),
+    m('td', `${s.copyfs}`),
+  ]));
+  m.render(mounts, s.mounts.map(infoMount).map(v => m('tr', [
+    m('td', v.type), m('td', v.source), m('td', v.target),
+  ])));
+  m.render(env, Object.keys(s.env).map(k => m('tr', [
+    m('td', k), m('td', s.env[k]),
+  ])));
+  m.render(cmd, s.cmd.map(v => m('tr', m('td',
+    m('pre', v.replace(/;\s*/g, ';\n')
+  )))));
 }
 
 
@@ -48,42 +88,42 @@ async function processRefresh() {
   )))])));
 }
 
-async function processDetails(id) {
-  var h2 = document.querySelector('#process_details h2');
-  var pstatus = document.querySelector('#process_status tbody');
-  var ppolicy = document.querySelector('#process_policy tbody');
-  var pmounts = document.querySelector('#process_mounts tbody');
-  var penv = document.querySelector('#process_env tbody');
-  var pcmd = document.querySelector('#process_cmd tbody');
+async function processData() {
+  if(!hash.startsWith('process_')) return;
+  var id = hash.substring(8);
+  var h2 = document.querySelector('#process_data h2');
+  var status = document.querySelector('#process_status tbody');
+  var policy = document.querySelector('#process_policy tbody');
+  var mounts = document.querySelector('#process_mounts tbody');
+  var env = document.querySelector('#process_env tbody');
+  var cmd = document.querySelector('#process_cmd tbody');
   var p = await m.request({method: 'GET', url: '/process/'+id});
   var s = p.State, hc = p.HostConfig, c = p.Config;
   var rp = hc.RestartPolicy, pb = hc.PortBindings;
   m.render(h2, [p.Name.substring(1), m('div', m('small', c.Image))]);
-  m.render(pstatus, m('tr', [
+  m.render(status, m('tr', [
     m('td', `${s.Status} (${s.ExitCode}) ${s.Error}`),
     m('td', moment(p.Created).fromNow()),
     m('td', moment(s.StartedAt).fromNow()),
+    m('td', moment(s.FinishedAt).fromNow()),
     m('td', p.RestartCount),
   ]));
-  m.render(ppolicy, m('tr', [
+  m.render(policy, m('tr', [
     m('td', c.WorkingDir),
     m('td', Object.keys(pb).map(k => m('tag', infoPortBinding(pb, k)))),
     m('td', `${rp.Name} (max: ${rp.MaximumRetryCount})`),
   ]));
-  m.render(pmounts, p.Mounts.map(v => m('tr', [
+  m.render(mounts, p.Mounts.map(v => m('tr', [
     m('td', v.Type), m('td', v.Source), m('td', v.Destination),
   ])));
-  m.render(penv, c.Env.map(v => m('tr', [
+  m.render(env, c.Env.map(v => m('tr', [
     m('td', v.split('=')[0]), m('td', v.split('=')[1]),
   ])));
-  m.render(pcmd, c.Cmd.map(v => m('tr', m('td',
+  m.render(cmd, c.Cmd.map(v => m('tr', m('td',
     m('pre', v.replace(/;\s*/g, ';\n')
   )))));
-  // [
-  //   ['Cmd', c.Cmd.map(v => `"${v}"`).join(' ')],
-  //   ['Env', c.Env.map(v => m('tag', v))]
-  // ].map(tr => m('tr', [m('td', tr[0]), m('td', tr[1])])));
 }
+
 
 
 
@@ -154,5 +194,9 @@ processRefresh();
 setInterval(processRefresh, 1000);
 osRefresh();
 setInterval(osRefresh, 1000);
+serviceData();
+setInterval(serviceData, 1000);
+processData();
+setInterval(processData, 1000);
 window.onhashchange = onHashChange;
 document.querySelector('#shell form').onsubmit = () => shell() && false;

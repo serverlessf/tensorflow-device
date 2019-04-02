@@ -11,10 +11,16 @@ body section {
 body.service #service {
   display: block;
 }
+body.service_data #service_data {
+  display: block;
+}
 body.process #process {
   display: block;
 }
-body.process_details #process_details {
+body.process_data #process_data {
+  display: block;
+}
+body.process_top #process_top {
   display: block;
 }
 body.shell #shell {

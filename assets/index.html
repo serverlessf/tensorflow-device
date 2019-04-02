@@ -5,6 +5,8 @@
 <link rel="shortcut icon" type="image/png" href="https://cdn3.iconfinder.com/data/icons/restaurant-volume-2/512/mushroom-512.png">
 <link href="https://fonts.googleapis.com/css?family=Baloo+Chettan" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/barecss@1.1.1/css/bare.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
 <script src="https://unpkg.com/moment/min/moment.min.js"></script>
 <script src="https://unpkg.com/mithril/mithril.js"></script>
 <link rel="stylesheet" href="index.css">
@@ -17,21 +19,21 @@
 <body>
 <nav>
 <label>
-  <input type="checkbox">
-  <header><a><img src="https://cdn3.iconfinder.com/data/icons/restaurant-volume-2/512/mushroom-512.png"> DEVICE</a></header>
-  <ul>
-    <li><a id="a_service" href="#service">Service</a></li>
-    <li><a id="a_process" href="#process">Process</a></li>
-    <li><a id="a_shell" href="#shell">Shell</a></li>
-    <li><a id="a_os" href="#os" active>OS</a></li>
-    <li>
-      <a>Help</a>
-      <menu>
-        <menuitem><a href="https://www.youtube.com/watch?v=GNKeps6pIao">Making Activated Carbon</a></menuitem>
-        <menuitem><a href="https://www.youtube.com/watch?v=s5PwfEqTMyg">How To Grow Microgreens</a></menuitem>
-      </menu>
-    </li>
-  </ul>
+<input type="checkbox">
+<header><a><img src="https://cdn3.iconfinder.com/data/icons/restaurant-volume-2/512/mushroom-512.png"> DEVICE</a></header>
+<ul>
+  <li><a id="a_service" href="#service">Service</a></li>
+  <li><a id="a_process" href="#process">Process</a></li>
+  <li><a id="a_shell" href="#shell">Shell</a></li>
+  <li><a id="a_os" href="#os" active>OS</a></li>
+  <li>
+    <a>Help</a>
+    <menu>
+      <menuitem><a href="https://www.youtube.com/watch?v=GNKeps6pIao">Making Activated Carbon</a></menuitem>
+      <menuitem><a href="https://www.youtube.com/watch?v=s5PwfEqTMyg">How To Grow Microgreens</a></menuitem>
+    </menu>
+  </li>
+</ul>
 </label>
 </nav>
 
@@ -53,6 +55,64 @@
 </table>
 </section>
 
+<section id="service_data">
+<h2></h2>
+<form>
+</form>
+<table id="service_status">
+  <caption>Status</caption>
+  <thead>
+  <tr>
+    <th>Created</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="service_policy">
+  <caption>Policy</caption>
+  <thead>
+  <tr>
+    <th>Working Dir</th>
+    <th>Ports</th>
+    <th>Copy FS</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="service_mounts">
+  <caption>Mounts</caption>
+  <thead>
+  <tr>
+    <th>Type</th>
+    <th>Source</th>
+    <th>Destination</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="service_env">
+  <caption>Env</caption>
+  <thead>
+  <tr>
+    <th>Variable</th>
+    <th>Value</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="service_cmd">
+  <caption>Cmd</caption>
+  <tbody>
+  </tbody>
+</table>
+</section>
+
+
+
 <section id="process">
 <table>
   <thead>
@@ -68,67 +128,105 @@
 </table>
 </section>
 
-<section id="process_details">
-  <h2></h2>
-  <form>
-    <a btn href="/process/carevaluation.admiring_brahmagupta/fs/">File System</a>
-    <a btn href="/process/carevaluation.admiring_brahmagupta/fs/">Upload to File System</a>
-  </form>
-  <table id="process_status">
-    <caption>State</caption>
-    <thead>
-    <tr>
-      <th>Status</th>
-      <th>Created</th>
-      <th>Finished</th>
-      <th>Restarts</th>
-    </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
-  <table id="process_policy">
-    <caption>Policy</caption>
-    <thead>
-    <tr>
-      <th>Working Dir</th>
-      <th>Port Bindings</th>
-      <th>Restart</th>
-    </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
-  <table id="process_mounts">
-    <caption>Mounts</caption>
-    <thead>
-    <tr>
-      <th>Type</th>
-      <th>Source</th>
-      <th>Destination</th>
-    </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
-  <table id="process_env">
-    <caption>Env</caption>
-    <thead>
-    <tr>
-      <th>Variable</th>
-      <th>Value</th>
-    </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
-  <table id="process_cmd">
-    <caption>Cmd</caption>
-    <tbody>
-    </tbody>
-  </table>
+<section id="process_data">
+<h2></h2>
+<form>
+  <div txt="c">
+  <button onclick="m.request({method: 'POST', url: process+'/start'})">Start</button>
+  <button onclick="m.request({method: 'POST', url: process+'/stop'})">Stop</button>
+  <button onclick="m.request({method: 'POST', url: process+'/kill'})">Kill</button>
+  <button onclick="m.request({method: 'POST', url: process+'/restart'})">Restart</button>
+  <button onclick="m.request({method: 'POST', url: process+'/pause'})">Pause</button>
+  <button onclick="m.request({method: 'POST', url: process+'/unpause'})">Unpause</button>
+  <button onclick="m.request({method: 'POST', url: process+'/remove'})">Remove</button>
+  </div>
+  <div txt="c">
+  <button onclick="processExport(hashid)">Export</button>
+  <button onclick="location.pathname=`/process/${hashid}/fs`">Access</button>
+  <button href="">Upload</button>
+  <input type="radio" name="process_r" id="process_rdetails" checked>
+  <label for="process_rdetails">Details</label>
+  <input type="radio" name="process_r" id="process_rtop">
+  <label for="process_rtop">Top</label>
+  <input type="radio" name="process_r" id="process_rlogs">
+  <label for="process_rlogs">Logs</label>
+  </div>
+</form>
+<table toggled id="process_top">
+  <caption>Top</caption>
+  <thead>
+  <tr>
+    <th>UID</th>
+    <th>PID</th>
+    <th>PPID</th>
+    <th>C</th>
+    <th>STIME</th>
+    <th>TTY</th>
+    <th>TIME</th>
+    <th>CMD</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="process_status">
+  <caption>State</caption>
+  <thead>
+  <tr>
+    <th>Status</th>
+    <th>Created</th>
+    <th>Started</th>
+    <th>Finished</th>
+    <th>Restarts</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="process_policy">
+  <caption>Policy</caption>
+  <thead>
+  <tr>
+    <th>Working Dir</th>
+    <th>Port Bindings</th>
+    <th>Restart</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="process_mounts">
+  <caption>Mounts</caption>
+  <thead>
+  <tr>
+    <th>Type</th>
+    <th>Source</th>
+    <th>Destination</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="process_env">
+  <caption>Env</caption>
+  <thead>
+  <tr>
+    <th>Variable</th>
+    <th>Value</th>
+  </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<table id="process_cmd">
+  <caption>Cmd</caption>
+  <tbody>
+  </tbody>
+</table>
 </section>
-  
+
+
+
 <section id="shell">
 <form>
   <label>Execute shell command</label>
