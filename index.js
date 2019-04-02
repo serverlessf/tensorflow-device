@@ -44,16 +44,6 @@ async function commandRun(o, pname) {
   return `docker run -d ${workdir} ${name} ${ports} ${mounts} ${env} -it ${image} ${cmd}`;
 };
 
-function commandOptions(options, values=[], exclude=[]) {
-  var o = options||{}, out = '';
-  for(var k in o) {
-    if(exclude.includes(k)) continue;
-    if(!values.includes(k)) out += ` --${k}`;
-    else out += ` --${k}`;
-  }
-  return out.trimStart();
-};
-
 
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -128,7 +118,7 @@ app.use('/exec', webexec);
 app.use('/os', webos);
 app.use((err, req, res, next) => {
   console.error(err.stack)
-  res.status(500).send('Something broke!')
+  res.status(err.statusCode||500).send(err.json||err);
 })
 app.use(express.static(__dirname+'/assets', {extensions: ['html']}));
 

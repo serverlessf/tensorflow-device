@@ -1,63 +1,76 @@
+const finalhandler = require('finalhandler');
+const serveStatic = require('serve-static');
+const serveIndex = require('serve-index');
 const Docker = require('dockerode');
 const express = require('express');
 const path = require('path');
+Array = require('extra-array');
 
 
 
+const ROOT = __dirname+'/_data/process';
+const REFS = /\/process\/.*?\/fs/;
 const app = express();
 const docker = new Docker();
+const wrap = (fn) => ((req, res, next) => (
+  fn(req, res, next).then(null, next)
+));
 
 
 
-app.get('', async (req, res) => {
+function commandOptions(options, values=[], exclude=[]) {
+  var o = options||{}, out = '';
+  for(var k in o) {
+    if(exclude.includes(k)) continue;
+    if(!values.includes(k)) out += ` --${k}`;
+    else out += ` --${k}`;
+  }
+  return out.trimStart();
+};
+
+
+
+app.get('/', wrap(async (req, res) => {
   var options = req.body, filters = (options||{}).filters||{};
   for(var k in filters)
-    filters[k] = arrayEnsure(filters[k]);
-  var data = await docker.listContainers(options);
-  res.json(data);
-});
-app.get('/:id', async (req, res) => {
+    filters[k] = Array.ensure(filters[k]);
+  res.json(await docker.listContainers(options));
+}));
+app.get('/:id', wrap(async (req, res) => {
   var {id} = req.params, options = req.body;
-  var data = await docker.getContainer(id).inspect(options);
-  res.json(data);
-});
-app.delete('/:id', async (req, res) => {
+  res.json(await docker.getContainer(id).inspect(options));
+}));
+app.delete('/:id', wrap(async (req, res) => {
   var {id} = req.params, options = req.body;
-  await docker.getContainer(id).stop(options);
-  res.json(null);
-});
+  res.json(await docker.getContainer(id).stop(options));
+}));
 app.post('/:id/exec', async (req, res) => {
   var {id} = req.params, options = req.body||{}, cmd = options.cmd||'';
   var opts = commandOptions(req.body, [], ['cmd'])
-  var {stdout, stderr} = await cpExec(`docker exec ${opts} ${id} ${cmd}`);
-  res.json({stdout, stderr});
+  res.json(await cpExec(`docker exec ${opts} ${id} ${cmd}`));
 });
-app.get('/:id/export', async (req, res) => {
+app.get('/:id/export', wrap(async (req, res) => {
   var {id} = req.params;
-  var stream = await docker.getContainer(id).export();
   res.writeHead(200, {'content-type': 'application/x-tar'});
-  stream.pipe(res);
-});
+  (await docker.getContainer(id).export()).pipe(res);
+}));
 app.get('/:id/fs*', (req, res) => {
-  req.url = req.url.replace(/\/process\/.*?\/fs/, '')||'/';
+  req.url = req.url.replace(REFS, '')||'/';
   var done = finalhandler(req, res);
-  var {id} = req.params, ppath = path.join(PROCESSPATH, id);
+  var {id} = req.params, ppath = path.join(ROOT, id);
   var index = serveIndex(ppath, {icons: true}), static = serveStatic(ppath);
   static(req, res, (err) => err? done(err):index(req, res, done));
 });
-app.post('/:id/fs*', async (req, res) => {
+app.post('/:id/fs*', wrap(async (req, res) => {
   var {id} = req.params, {file} = req.files;
-  var rel = req.url.replace(/\/process\/.*?\/fs\//, '')||'/';
-  var abs = path.join(PROCESSPATH, id, rel);
-  await file.mv(abs);
-  res.json(file.size);
-});
-app.all('/:id/:fn', async (req, res) => {
+  var rel = req.url.replace(REFS, '')||'/';
+  var abs = path.join(ROOT, id, rel);
+  await file.mv(abs); res.json(file.size);
+}));
+app.all('/:id/:fn', wrap(async (req, res) => {
   var {id, fn} = req.params;
   var options = ['changes'].includes(fn)? undefined:req.body;
-  docker.getContainer(id)[fn](options, (err, data) => {
-    if(err) res.status(400).json({err});
-    return fn==='logs'? res.send(data):res.json(data);
-  });
-});
+  var data = await docker.getContainer(id)[fn](options);
+  return fn==='logs'? res.send(data):res.json(data);
+}));
 module.exports = app;
