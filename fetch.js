@@ -1,8 +1,8 @@
 const decompress = require('decompress');
 const download = require('download');
+const cp = require('extra-cp');
 const fs = require('fs-extra');
 const path = require('path');
-const {cpExec, pathFilename} = require('./util');
 
 
 
@@ -16,14 +16,14 @@ async function dirDehusk(dir) {
 }
 
 async function fetchGit(url, dir, name=null) {
-  var name = name||pathFilename(url);
+  var name = name||path.parse(url).file;
   var repo = url.replace(/#.*/, ''), branch = url.substring(repo.length+1)||'master';
   var cmd = `git clone --single-branch --branch ${branch} --depth=1 ${repo} ${name}`;
-  await cpExec(cmd, {cwd: dir});
+  await cp.exec(cmd, {cwd: dir});
 }
 
 async function fetchUrl(url, dir, name=null) {
-  var name = name||pathFilename(url);
+  var name = name||path.parse(url).file;
   var pkg = path.join(dir, name);
   var out = path.join(pkg, path.basename(url));
   fs.mkdirSync(pkg, {recursive: true});

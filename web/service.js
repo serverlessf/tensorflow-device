@@ -44,15 +44,10 @@ async function commandRun(o, pname) {
 
 
 
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
-app.use(fileUpload());
-app.use((req, res, next) => { Object.assign(req.body, req.query); next(); });
-
-app.get('/service', (req, res) => {
+app.get('/', (req, res) => {
   res.json(services);
 });
-app.post('/service', wrap(async (req, res) => {
+app.post('/', wrap(async (req, res) => {
   var {name, git, url} = req.body;
   var file = (req.files||{}).service;
   name = name||path.parse(git||url||file.name).name;
@@ -62,7 +57,7 @@ app.post('/service', wrap(async (req, res) => {
   services[name] = Object.assign({name}, config.read(dir), req.body, {name});
   res.json(services[name]);
 }));
-app.delete('/service/:name', wrap(async (req, res) => {
+app.delete('/:name', wrap(async (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
   var jobs = [fs.remove(path.join(ROOT, name))];
@@ -72,32 +67,32 @@ app.delete('/service/:name', wrap(async (req, res) => {
   await Promise.all(jobs);
   res.json(services[name] = null);
 }));
-app.get('/service/:name', (req, res) => {
+app.get('/:name', (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
   res.json(services[name]);
 });
-app.post('/service/:name', (req, res) => {
+app.post('/:name', (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
   config.write(path.join(ROOT, name), Object.assign(services[name], req.body, {name}));
   res.json(services[name]);
 });
-app.get('/service/:name/fs*', (req, res) => {
+app.get('/:name/fs*', (req, res) => {
   req.url = req.url.replace(REFS, '')||'/';
   var done = finalhandler(req, res);
   var {name} = req.params, spath = path.join(ROOT, name);
   var index = serveIndex(spath, {icons: true}), static = serveStatic(spath);
   static(req, res, (err) => err? done(err):index(req, res, done));
 });
-app.post('/service/:name/fs*', wrap(async (req, res) => {
+app.post('/:name/fs*', wrap(async (req, res) => {
   var {name} = req.params, {file} = req.files;
   var rel = req.url.replace(REFS, '')||'/';
   var abs = path.join(ROOT, name, rel);
   await file.mv(abs);
   res.json(file.size);
 }));
-app.post('/service/:name/run', wrap(async (req, res) => {
+app.post('/:name/run', wrap(async (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
   var pname = name+'.'+dockerNames.getRandomName();
