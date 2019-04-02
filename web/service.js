@@ -15,7 +15,7 @@ const path = require('path');
 
 const REFS = /\/service\/.*?\/fs/;
 const ROOT = __dirname+'/_data/service';
-const PROCESSROOT = __dirname+'/_data/process';
+const PROOT = __dirname+'/_data/process';
 
 const app = express();
 const docker = new Docker();
@@ -30,7 +30,7 @@ const wrap = (fn) => ((req, res, next) => (
 
 
 async function commandRun(o, pname) {
-  var ppath = o.copyfs? path.join(PROCESSROOT, pname):o.path;
+  var ppath = o.copyfs? path.join(PROOT, pname):o.path;
   if(o.copyfs) await fs.copy(o.path, ppath);
   var workdir = `-w ${o.workdir}`, name = `--name ${pname}`;
   var freePorts = await findFreePort(1024, 65535, '127.0.0.1', o.ports.length);
@@ -105,7 +105,7 @@ app.post('/service/:name/run', wrap(async (req, res) => {
   var cmd = await commandRun(o, pname);
   var {stdout, stderr} = await cp.exec(cmd);
   var id = (stdout||stderr).trim();
-  if(o.copyfs) await fs.symlink(path.join(ROOT, pname), path.join(PROCESSROOT, id));
+  if(o.copyfs) await fs.symlink(path.join(PROOT, pname), path.join(PROOT, id));
   res.json({id, name: pname});
 }));
 fs.mkdirSync(ROOT, {recursive: true});
