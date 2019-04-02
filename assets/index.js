@@ -127,12 +127,12 @@ async function processData() {
 
 
 
-async function shell() {
-  var cmd = document.querySelector('#shell input').value;
-  console.log(`shell(${cmd})`);
-  var o = await m.request({method: 'POST', url: '/shell', data: {cmd}});
-  var stdout = document.querySelector('#shell_stdout');
-  var stderr = document.querySelector('#shell_stderr');
+async function exec() {
+  var cmd = document.querySelector('#exec input').value;
+  console.log(`exec(${cmd})`);
+  var o = await m.request({method: 'POST', url: '/exec', data: {cmd}});
+  var stdout = document.querySelector('#exec_stdout');
+  var stderr = document.querySelector('#exec_stderr');
   m.render(stdout, o.stdout);
   m.render(stderr, o.stderr);
 }
@@ -199,4 +199,4 @@ setInterval(serviceData, 1000);
 processData();
 setInterval(processData, 1000);
 window.onhashchange = onHashChange;
-document.querySelector('#shell form').onsubmit = () => shell() && false;
+document.querySelector('#exec form').onsubmit = () => exec() && false;

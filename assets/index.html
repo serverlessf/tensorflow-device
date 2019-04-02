@@ -24,7 +24,7 @@
 <ul>
   <li><a id="a_service" href="#service">Service</a></li>
   <li><a id="a_process" href="#process">Process</a></li>
-  <li><a id="a_shell" href="#shell">Shell</a></li>
+  <li><a id="a_exec" href="#exec">Exec</a></li>
   <li><a id="a_os" href="#os" active>OS</a></li>
   <li>
     <a>Help</a>
@@ -227,13 +227,13 @@
 
 
 
-<section id="shell">
+<section id="exec">
 <form>
-  <label>Execute shell command</label>
+  <label>Execute command</label>
   <input type="text" placeholder="e.g. uptime">
 </form>
-<pre><code id="shell_stdout"></code></pre>
-<pre><code id="shell_stderr"></code></pre>
+<pre><code id="exec_stdout"></code></pre>
+<pre><code id="exec_stderr"></code></pre>
 </section>
 
 <section id="os">
@@ -274,7 +274,7 @@
     <th>GID</th>
     <th>Username</th>
     <th>Homedir</th>
-    <th>Shell</th>
+    <th>exec</th>
   </tr>
   </thead>
   <tbody>

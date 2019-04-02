@@ -23,7 +23,7 @@ body.process_data #process_data {
 body.process_top #process_top {
   display: block;
 }
-body.shell #shell {
+body.exec #exec {
   display: block;
 }
 body.os #os {
@@ -37,7 +37,7 @@ body.process #a_process {
   color: blueviolet;
   border-color: blueviolet;
 }
-body.shell #a_shell {
+body.exec #a_exec {
   color: blueviolet;
   border-color: blueviolet;
 }
@@ -46,7 +46,7 @@ body.os #a_os {
   border-color: blueviolet;
 }
 
-#shell_stderr {
+#exec_stderr {
   border-left-color: darkorange;
 }
 

@@ -14,20 +14,14 @@ const fetch = require('./fetch');
 const fs = require('fs-extra');
 const http = require('http');
 const path = require('path');
-const os = require('os');
-
+const webexec = require('./web/exec');
+const webos = require('./web/os');
 
 
 const PORT = '8080';
 const SERVICEPATH = __dirname+'/_data/service';
 const PROCESSPATH = __dirname+'/_data/process';
 const CONFIG = __dirname+'/_data/config.json';
-// exec
-const OSFN = [
-  'arch', 'cpus', 'endianness', 'freemem', 'homedir', 'hostname',
-  'loadavg', 'networkInterfaces', 'platform', 'release', 'tmpdir',
-  'totalmem', 'type', 'uptime', 'userInfo'
-];
 
 const app = express();
 const docker = new Docker();
@@ -179,21 +173,8 @@ app.all('/process/:id/:fn', async (req, res) => {
 });
 
 
-app.post('/shell', (req, res) => {
-  var {cmd} = req.body;
-  cpExec(cmd).then(o => res.json(o), o => res.json(o));
-});
-app.get('/os', (req, res) => {
-  var out = {};
-  for(var fn of OSFN)
-    out[fn] = os[fn]();
-  res.json(out);
-});
-app.get('/os/:fn', (req, res) => {
-  var {fn} = req.params;
-  if(OSFN.includes(fn)) return res.json(os[fn]());
-  res.status(404).json('Unknown function '+fn);
-});
+app.use('/exec', webexec);
+app.use('/os', webos);
 app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(500).send('Something broke!')
