@@ -27,3 +27,4 @@ app.use((err, req, res, next) => {
   res.status(err.statusCode||500).send(err.json||err);
 })
 app.use(express.static(ROOT+'/assets', {extensions: ['html']}));
+module.exports = app;

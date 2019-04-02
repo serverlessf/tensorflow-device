@@ -23,7 +23,7 @@ function infoMount(str) {
 
 
 function onHashChange() {
-  hash = location.hash.substring(1);
+  hash = location.hash.substring(1)||'os';
   hashid = hash.replace(/.*?_/, '');
   service = '/service/'+hashid; process = '/process/'+hashid;
   document.body.className = hash.replace(/_.*/, '_data');
