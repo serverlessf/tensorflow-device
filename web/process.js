@@ -3,15 +3,19 @@ const serveStatic = require('serve-static');
 const serveIndex = require('serve-index');
 const Docker = require('dockerode');
 const express = require('express');
-const path = require('path');
 Array = require('extra-array');
+const cp = require('extra-cp');
+const fs = require('fs-extra');
+const path = require('path');
 
 
 
-const ROOT = __dirname+'/_data/process';
 const REFS = /\/process\/.*?\/fs/;
+const ROOT = __dirname+'/_data/process';
+
 const app = express();
 const docker = new Docker();
+
 const wrap = (fn) => ((req, res, next) => (
   fn(req, res, next).then(null, next)
 ));
@@ -47,7 +51,7 @@ app.delete('/:id', wrap(async (req, res) => {
 app.post('/:id/exec', async (req, res) => {
   var {id} = req.params, options = req.body||{}, cmd = options.cmd||'';
   var opts = commandOptions(req.body, [], ['cmd'])
-  res.json(await cpExec(`docker exec ${opts} ${id} ${cmd}`));
+  res.json(await cp.exec(`docker exec ${opts} ${id} ${cmd}`));
 });
 app.get('/:id/export', wrap(async (req, res) => {
   var {id} = req.params;
@@ -73,4 +77,5 @@ app.all('/:id/:fn', wrap(async (req, res) => {
   var data = await docker.getContainer(id)[fn](options);
   return fn==='logs'? res.send(data):res.json(data);
 }));
+fs.mkdirSync(ROOT, {recursive: true});
 module.exports = app;
