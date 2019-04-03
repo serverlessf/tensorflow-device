@@ -38,11 +38,11 @@ function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
   $access.setAttribute('href', `/service/${o.service}/fs/`);
-  m.request({method: 'GET', url: '/process/'+o.process}).then((p) => {
-    var q = `process=${o.process}&engine=${p.Config.Image}&update=1`;
+  m.request({method: 'GET', url: '/service/'+o.service}).then((p) => {
+    var q = `service=${o.service}&engine=${o.engine}&update=1`;
     $upload.setAttribute('href', `/upload.html?${q}`);
-    $access.setAttribute('href', `/process/${o.process}/fs/`);
-    $download.setAttribute('href', `/process/${o.process}/export`);
+    $access.setAttribute('href', `/service/${o.service}/fs/`);
+    $download.setAttribute('href', `/service/${o.service}/export`);
   });
   return o;
 }
