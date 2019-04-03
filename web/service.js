@@ -53,6 +53,7 @@ app.post('/', wrap(async (req, res) => {
   var {name, git, url, update} = req.body;
   var file = (req.files||{}).file, s = services[name];
   name = name||path.parse(git||url||file.name).name;
+  console.log(s, update);
   if(s && !update) return errServiceExists(res, name);
   await fetch({git, url, file}, ROOT, name);
   var dir = path.join(ROOT, name);
