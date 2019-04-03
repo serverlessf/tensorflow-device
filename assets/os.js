@@ -31,7 +31,7 @@ async function render() {
     }
     return trs;
   }, []));
-};
+}
 
 
 

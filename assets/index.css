@@ -32,29 +32,26 @@ body.exec #exec {
 body.os #os {
   display: block;
 }
-nav:not([class]) ul a[active] {
-  color: blueviolet;
-  border-bottom-color: blueviolet;
-}
-body.slist #a_service {
+body.sservice #aservice {
   color: blueviolet;
   border-color: blueviolet;
 }
-body.plist #a_process {
+body.process #aprocess {
   color: blueviolet;
   border-color: blueviolet;
 }
-body.exec #a_exec {
+body.exec #aexec {
   color: blueviolet;
   border-color: blueviolet;
 }
-body.os #a_os {
+body.os #aos {
   color: blueviolet;
   border-color: blueviolet;
 }
 
-#exec_stderr {
-  border-left-color: darkorange;
+#stderr {
+  border-left-color: red;
+  color: darkred;
 }
 
 
