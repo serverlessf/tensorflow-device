@@ -5,46 +5,11 @@ h1, h2 {
 body, form * {
   font-family: 'Baloo Chettan', cursive;
 }
-body section[id] {
-  display: none;
-}
-body.slist #slist {
-  display: block;
-}
-body.spost #spost {
-  display: block;
-}
-body.sdata #sdata {
-  display: block;
-}
-body.plist #plist {
-  display: block;
-}
-body.pdata #pdata {
-  display: block;
-}
-body.ptop #ptop {
-  display: block;
-}
-body.exec #exec {
-  display: block;
-}
-body.os #os {
-  display: block;
-}
-body.sservice #aservice {
+body.service #aservice {
   color: blueviolet;
   border-color: blueviolet;
 }
 body.process #aprocess {
-  color: blueviolet;
-  border-color: blueviolet;
-}
-body.exec #aexec {
-  color: blueviolet;
-  border-color: blueviolet;
-}
-body.os #aos {
   color: blueviolet;
   border-color: blueviolet;
 }
