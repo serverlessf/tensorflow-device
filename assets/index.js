@@ -22,7 +22,7 @@ async function request() {
   m.render($userInfo, m('tr', Object.keys(ui).map(k => m('td', ui[k]))));
   m.render($cpus, o.cpus.map(c => m('tr', [
     m('td', c.model), m('td', c.speed),
-    Object.keys(c.times).map(k => m('tag', `${k}: ${c.times[k]}`))
+    m('td', Object.keys(c.times).map(k => m('tag', `${k}: ${c.times[k]}`)))
   ])));
   m.render($networkInterfaces, Object.keys(ni).reduce((trs, k) => {
     for(var n of ni[k]) {
