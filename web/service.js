@@ -55,6 +55,8 @@ app.get('/', (req, res) => {
 });
 app.post('/', wrap(async (req, res) => {
   var {name, git, url, update} = req.body;
+  console.log(req.body);
+  console.log();
   var file = (req.files||{}).file, s = services[name];
   name = name||path.parse(git||url||file.name).name;
   console.log(s, update);
