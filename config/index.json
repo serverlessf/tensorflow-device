@@ -3,13 +3,13 @@
   "copyfs": true,
   "ports": [8000],
   "engine": "python:3",
-  "mounts": ["type=bind,source=${path},target=/usr/src/app"],
+  "mounts": ["type=bind,source=$path,target=/usr/src/app"],
   "workdir": "/usr/src/app",
   "env": {
-    "DEVICE": "127.0.0.1:${port}",
+    "DEVICE": "127.0.0.1:$PORT",
     "QUERY": "NOT_SPECIFIED",
-    "SERVICE": "$SERVICE",
-    "PROCESS": "NOT_SPECIFIED",
-    "PORT": "${port}"
+    "SERVICE": "$service",
+    "PROCESS": "$process",
+    "PORT": "$port"
   }
 }

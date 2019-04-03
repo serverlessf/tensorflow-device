@@ -20,10 +20,10 @@
 <nav>
 <label>
 <input type="checkbox">
-<header><a><img src="https://cdn3.iconfinder.com/data/icons/restaurant-volume-2/512/mushroom-512.png"> DEVICE</a></header>
+<header><a href="#os"><img src="https://cdn3.iconfinder.com/data/icons/restaurant-volume-2/512/mushroom-512.png"> DEVICE</a></header>
 <ul>
-  <li><a id="a_service" href="#service">Service</a></li>
-  <li><a id="a_process" href="#process">Process</a></li>
+  <li><a id="a_service" href="#slist">Service</a></li>
+  <li><a id="a_process" href="#plist">Process</a></li>
   <li><a id="a_exec" href="#exec">Exec</a></li>
   <li><a id="a_os" href="#os" active>OS</a></li>
   <li>
@@ -39,7 +39,10 @@
 
 
 <main>
-<section id="service">
+<section id="slist">
+<form txt="c">
+  <a btn href="#spost">New Service</a>
+</form>
 <table>
   <thead>
   <tr>
@@ -55,7 +58,33 @@
 </table>
 </section>
 
-<section id="service_data">
+<section id="spost">
+<form>
+<grid>
+  <div col="1/1">
+    <label>Name</label>
+    <input type="text" name="name" id="service_name">
+  </div>
+  <div col="1/3">
+    <label>Git</label>
+    <input type="text" name="git" id="service_git">
+  </div>
+  <div col="1/3">
+    <label>URL</label>
+    <input type="text" name="url" id="service_url">
+  </div>
+  <div col="1/3">
+    <label>File</label>
+    <input type="file" name="service" id="service_file">
+  </div>
+  <div col="1/1" txt="c">
+    <input type="submit" value="Create Service">
+  </div>
+</grid>
+</form>
+</section>
+
+<section id="sdata">
 <h2></h2>
 <form>
 </form>
@@ -113,7 +142,7 @@
 
 
 
-<section id="process">
+<section id="plist">
 <table>
   <thead>
   <tr>
@@ -128,7 +157,7 @@
 </table>
 </section>
 
-<section id="process_data">
+<section id="pdata">
 <h2></h2>
 <form>
   <div txt="c">

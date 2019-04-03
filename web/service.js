@@ -13,6 +13,8 @@ const path = require('path');
 
 
 
+const E = process.env;
+const PORT = parseInt(E['PORT']||'8080');
 const REFS = /\/service\/.*?\/fs/;
 const ROOT = process.cwd()+'/_data/service';
 const PROOT = process.cwd()+'/_data/process';
@@ -21,8 +23,8 @@ const app = express();
 const docker = new Docker();
 const services = {};
 
-const errNoService = (res, name) => res.status(404).json('Cant find service '+name);
-const errServiceExists = (res, name) => res.status(405).json('Service '+name+' already exists');
+const errNoService = (res, name) => res.status(404).json({message: 'Cant find service '+name});
+const errServiceExists = (res, name) => res.status(405).json({message: 'Service '+name+' already exists'});
 const wrap = (fn) => ((req, res, next) => (
   fn(req, res, next).then(null, next)
 ));
@@ -38,7 +40,7 @@ async function commandRun(o, pname) {
   var mounts = o.mounts.reduce((str, mount) => str+` --mount ${mount}`, '');
   var env = Object.keys(o.env).reduce((str, k) => str+` -e ${k}=${o.env[k]}`, '');
   var image = o.engine, cmd = o.cmd.join(' ');
-  mounts = mounts.replace(/\$\{path\}/g, ppath);
+  mounts = mounts.replace(/\$path/g, ppath);
   return `docker run -d ${workdir} ${name} ${ports} ${mounts} ${env} -it ${image} ${cmd}`;
 };
 
@@ -49,13 +51,16 @@ app.get('/', (req, res) => {
 });
 app.post('/', wrap(async (req, res) => {
   var {name, git, url} = req.body;
-  var file = (req.files||{}).service;
+  var file = (req.files||{}).service, service = services[name];
   name = name||path.parse(git||url||file.name).name;
-  if(services[name]) return errServiceExists(res, name);
+  if(service) return errServiceExists(res, name);
   await fetch({git, url, file}, ROOT, name);
   var dir = path.join(ROOT, name);
-  services[name] = Object.assign({name}, config.read(dir), req.body, {name});
-  res.json(services[name]);
+  service = Object.assign({}, config.read(dir), req.body, {name});
+  service.env['SERVICE'] = name;
+  service.env['DEVICE'] = '127.0.0.1:'+PORT;
+  console.log(service);
+  res.json(services[name] = service);
 }));
 app.delete('/:name', wrap(async (req, res) => {
   var {name} = req.params;

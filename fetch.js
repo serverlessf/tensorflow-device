@@ -33,12 +33,12 @@ async function fetchUrl(url, dir, name=null) {
 }
 
 async function fetchFile(file, dir, name=null) {
-  var name = name||pathFilename(file.name);
+  var name = name||path.parse(file.name).name;
   var pkg = path.join(dir, name);
   var out = path.join(pkg, path.basename(file.name));
   fs.mkdirSync(pkg, {recursive: true});
   await new Promise((fres, frej) => file.mv(out, (err) => err? frej(err):fres()));
-  await decompress(out);
+  await decompress(out, pkg);
   await fs.remove(out);
   await dirDehusk(pkg);
 }

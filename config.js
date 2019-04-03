@@ -17,7 +17,8 @@ function defaults(o) {
   ARRAYKEYS.forEach(k => { if(typeof o[k]==='string') o[k] = o[k].split(';'); });
   o = Object.assign(DEFAULTS.get((o.engine||DEFAULTENGINE).replace(/\W/g, '_')), o);
   o = Object.assign(DEFAULTS.get('index'), o);
-  for(var k in o.env) o.env[k] = o.env[k].replace(/\$\{port\}/g, o.ports[0]);
+  // for(var k in o.env) o.env[k] = o.env[k].replace(/\$name/g, o.name);
+  for(var k in o.env) o.env[k] = o.env[k].replace(/\$port/g, o.ports[0]);
   o.created = o.created||new Date();
   return o;
 }
@@ -35,7 +36,7 @@ function read(dir) {
 
 function readAll(dir, configs={}) {
   for(var name of fs.readdirSync(dir))
-    configs[name] = Object.assign(read(path.join(dir, name)), {name});
+    configs[name] = Object.assign({}, read(path.join(dir, name)), {name});
   return configs;
 }
 exports.defaults = defaults;

@@ -26,14 +26,14 @@ function onHashChange() {
   hash = location.hash.substring(1)||'os';
   hashid = hash.replace(/.*?_/, '');
   service = '/service/'+hashid; process = '/process/'+hashid;
-  document.body.className = hash.replace(/_.*/, '_data');
+  document.body.className = hash.replace(/(.).*?_.*/, '$1data');
 }
 
 
 
-async function serviceRefresh() {
-  if(hash!=='service') return;
-  var tbody = document.querySelector('#service tbody');
+async function serviceList() {
+  if(hash!=='slist') return;
+  var tbody = document.querySelector('#slist tbody');
   var ssp = m.request({method: 'GET', url: '/service'});
   var csp = m.request({method: 'GET', url: '/process'});
   var [ss, cs] = await Promise.all([ssp, csp]);
@@ -45,10 +45,19 @@ async function serviceRefresh() {
     m('td', s.ports.map(p => m('tag', p)))])));
 }
 
+function servicePost() {
+  var form = document.querySelector('#spost form');
+  var data = new FormData(form);
+  m.request({method: 'POST', url: '/service', data}).then((data) => {
+    iziToast.success({message: 'Created '+form.name.value});
+  }, (err) => iziToast.error({message: err.message}));
+  return false;
+}
+
 async function serviceData() {
   if(!hash.startsWith('service_')) return;
   var id = hash.substring(8);
-  var h2 = document.querySelector('#service_data h2');
+  var h2 = document.querySelector('#sdata h2');
   var status = document.querySelector('#service_status tbody');
   var policy = document.querySelector('#service_policy tbody');
   var mounts = document.querySelector('#service_mounts tbody');
@@ -77,9 +86,9 @@ async function serviceData() {
 
 
 
-async function processRefresh() {
-  if(hash!=='process') return;
-  var tbody = document.querySelector('#process tbody');
+async function processList() {
+  if(hash!=='plist') return;
+  var tbody = document.querySelector('#plist tbody');
   var cs = await m.request({method: 'GET', url: '/process?all=1'});
   m.render(tbody, cs.map(c => m('tr', [
     m('td', m('a', {href: '#process_'+c.Names[0].substr(1)}, c.Names[0].substr(1))),
@@ -91,7 +100,7 @@ async function processRefresh() {
 async function processData() {
   if(!hash.startsWith('process_')) return;
   var id = hash.substring(8);
-  var h2 = document.querySelector('#process_data h2');
+  var h2 = document.querySelector('#pdata h2');
   var status = document.querySelector('#process_status tbody');
   var policy = document.querySelector('#process_policy tbody');
   var mounts = document.querySelector('#process_mounts tbody');
@@ -188,10 +197,10 @@ async function osRefresh() {
 
 
 onHashChange();
-serviceRefresh();
-setInterval(serviceRefresh, 1000);
-processRefresh();
-setInterval(processRefresh, 1000);
+serviceList();
+setInterval(serviceList, 1000);
+processList();
+setInterval(processList, 1000);
 osRefresh();
 setInterval(osRefresh, 1000);
 serviceData();
@@ -199,4 +208,5 @@ setInterval(serviceData, 1000);
 processData();
 setInterval(processData, 1000);
 window.onhashchange = onHashChange;
+document.querySelector('#spost form').onsubmit = servicePost;
 document.querySelector('#exec form').onsubmit = () => exec() && false;

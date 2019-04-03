@@ -8,19 +8,22 @@ body, form * {
 body section {
   display: none;
 }
-body.service #service {
+body.slist #slist {
   display: block;
 }
-body.service_data #service_data {
+body.spost #spost {
   display: block;
 }
-body.process #process {
+body.sdata #sdata {
   display: block;
 }
-body.process_data #process_data {
+body.plist #plist {
   display: block;
 }
-body.process_top #process_top {
+body.pdata #pdata {
+  display: block;
+}
+body.ptop #ptop {
   display: block;
 }
 body.exec #exec {
@@ -29,11 +32,11 @@ body.exec #exec {
 body.os #os {
   display: block;
 }
-body.service #a_service {
+body.slist #a_service {
   color: blueviolet;
   border-color: blueviolet;
 }
-body.process #a_process {
+body.plist #a_process {
   color: blueviolet;
   border-color: blueviolet;
 }
