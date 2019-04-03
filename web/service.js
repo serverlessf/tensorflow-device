@@ -45,7 +45,10 @@ async function commandRun(o, pname) {
   return `docker run -d ${workdir} ${name} ${ports} ${mounts} ${env} -it ${image} ${cmd}`;
 };
 
-
+async function processes(name) {
+  var ps = await docker.listContainers({all: true});
+  return ps.filter(p => p.Names[0].substring(1).replace(/\.[^\.]*/, '')===name);
+}
 
 app.get('/', (req, res) => {
   res.json(services);
@@ -87,6 +90,45 @@ app.post('/:name', (req, res) => {
   config.write(path.join(ROOT, name), Object.assign(services[name], req.body, {name}));
   res.json(services[name]);
 });
+app.get('/:name/processes', wrap(async (req, res) => {
+  var {name} = req.params;
+  res.json(await processes(name));
+}));
+app.post('/:name/start', wrap(async (req, res) => {
+  var {name} = req.params, options = req.body, ps = await processes(name);
+  var prs = ps.map(p => docker.getContainer(p.Id).start(options));
+  res.json(await Promise.all(prs));
+}));
+app.post('/:name/stop', wrap(async (req, res) => {
+  var {name} = req.params, options = req.body, ps = await processes(name);
+  var prs = ps.map(p => docker.getContainer(p.Id).stop(options));
+  res.json(await Promise.all(prs));
+}));
+app.post('/:name/kill', wrap(async (req, res) => {
+  var {name} = req.params, options = req.body, ps = await processes(name);
+  var prs = ps.map(p => docker.getContainer(p.Id).kill(options));
+  res.json(await Promise.all(prs));
+}));
+app.post('/:name/restart', wrap(async (req, res) => {
+  var {name} = req.params, options = req.body, ps = await processes(name);
+  var prs = ps.map(p => docker.getContainer(p.Id).restart(options));
+  res.json(await Promise.all(prs));
+}));
+app.post('/:name/pause', wrap(async (req, res) => {
+  var {name} = req.params, options = req.body, ps = await processes(name);
+  var prs = ps.map(p => docker.getContainer(p.Id).pause(options));
+  res.json(await Promise.all(prs));
+}));
+app.post('/:name/unpause', wrap(async (req, res) => {
+  var {name} = req.params, options = req.body, ps = await processes(name);
+  var prs = ps.map(p => docker.getContainer(p.Id).unpause(options));
+  res.json(await Promise.all(prs));
+}));
+app.post('/:name/remove', wrap(async (req, res) => {
+  var {name} = req.params, options = req.body, ps = await processes(name);
+  var prs = ps.map(p => docker.getContainer(p.Id).remove(options));
+  res.json(await Promise.all(prs));
+}));
 app.get('/:name/fs*', (req, res) => {
   console.log(req.ip, req.method, req.url, req.body);
   req.url = req.url.replace(REFS, '')||'/';
