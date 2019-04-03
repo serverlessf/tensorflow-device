@@ -52,7 +52,7 @@ async function request(o) {
   var name = o.service;
   var sp = m.request({method: 'GET', url: '/service/'+name});
   var psp = m.request({method: 'GET', url: '/process?all=1'});
-  var [s, ps] = Promise.all([sp, psp]);
+  var [s, ps] = await Promise.all([sp, psp]);
   var running = 0, stopped = 0;
   for(var p of ps) {
     var pname = p.Names[0].substring(1), st = p.State.Status;
