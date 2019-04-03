@@ -54,9 +54,28 @@ function servicePost() {
   return false;
 }
 
+function serviceRun() {
+  var id = hash.substring(8);
+  m.request({method: 'POST', url: `/service/${id}/run`}).then((data) => {
+    iziToast.success({message: 'Running process '+data.name});
+  }, (err) => iziToast.error({message: err.message}));
+  return false;
+}
+
+function serviceDelete() {
+  var id = hash.substring(8);
+  console.log('serviceDelete', id);
+  m.request({method: 'DELETE', url: `/service/${id}`}).then((data) => {
+    iziToast.success({message: 'Removed service '+id});
+  }, (err) => iziToast.error({message: err.message}));
+  return false;
+}
+
 async function serviceData() {
   if(!hash.startsWith('service_')) return;
   var id = hash.substring(8);
+  var access = document.querySelector('#service_access');
+  access.setAttribute('href', `/service/${id}/fs/`);
   var h2 = document.querySelector('#sdata h2');
   var status = document.querySelector('#service_status tbody');
   var policy = document.querySelector('#service_policy tbody');
@@ -209,4 +228,6 @@ processData();
 setInterval(processData, 1000);
 window.onhashchange = onHashChange;
 document.querySelector('#spost form').onsubmit = servicePost;
+document.querySelector('#service_run').onclick = serviceRun;
+document.querySelector('#service_delete').onclick = serviceDelete;
 document.querySelector('#exec form').onsubmit = () => exec() && false;

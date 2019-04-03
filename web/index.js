@@ -17,7 +17,11 @@ const app = express();
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(fileUpload());
-app.use((req, res, next) => { Object.assign(req.body, req.query); next(); });
+app.use((req, res, next) => {
+  Object.assign(req.body, req.query);
+  if(req.method!=='GET') console.log(req.ip, req.method, req.url, req.body);
+  next();
+});
 app.use('/service', webservice);
 app.use('/process', webprocess);
 app.use('/exec', webexec);

@@ -14,8 +14,8 @@ const path = require('path');
 
 
 const E = process.env;
+const REFS = /\/.*?\/fs/;
 const PORT = parseInt(E['PORT']||'8080');
-const REFS = /\/service\/.*?\/fs/;
 const ROOT = process.cwd()+'/_data/service';
 const PROOT = process.cwd()+'/_data/process';
 
@@ -50,17 +50,17 @@ app.get('/', (req, res) => {
   res.json(services);
 });
 app.post('/', wrap(async (req, res) => {
-  var {name, git, url} = req.body;
-  var file = (req.files||{}).service, service = services[name];
+  var {name, git, url, update} = req.body;
+  var file = (req.files||{}).service, s = services[name];
   name = name||path.parse(git||url||file.name).name;
-  if(service) return errServiceExists(res, name);
+  if(s && !update) return errServiceExists(res, name);
   await fetch({git, url, file}, ROOT, name);
   var dir = path.join(ROOT, name);
-  service = Object.assign({}, config.read(dir), req.body, {name});
-  service.env['SERVICE'] = name;
-  service.env['DEVICE'] = '127.0.0.1:'+PORT;
-  console.log(service);
-  res.json(services[name] = service);
+  var snew = Object.assign({}, config.read(dir), req.body, {name});
+  snew.vervion = Math.max(snew.version, s? s.version+1:0);
+  snew.env['SERVICE'] = name;
+  snew.env['DEVICE'] = '127.0.0.1:'+PORT;
+  res.json(services[name] = snew);
 }));
 app.delete('/:name', wrap(async (req, res) => {
   var {name} = req.params;
@@ -84,6 +84,7 @@ app.post('/:name', (req, res) => {
   res.json(services[name]);
 });
 app.get('/:name/fs*', (req, res) => {
+  console.log(req.ip, req.method, req.url, req.body);
   req.url = req.url.replace(REFS, '')||'/';
   var done = finalhandler(req, res);
   var {name} = req.params, spath = path.join(ROOT, name);
