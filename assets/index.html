@@ -187,23 +187,6 @@
   <label for="process_rlogs">Logs</label>
   </div>
 </form>
-<table toggled id="process_top">
-  <caption>Top</caption>
-  <thead>
-  <tr>
-    <th>UID</th>
-    <th>PID</th>
-    <th>PPID</th>
-    <th>C</th>
-    <th>STIME</th>
-    <th>TTY</th>
-    <th>TIME</th>
-    <th>CMD</th>
-  </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
 <table id="process_status">
   <caption>State</caption>
   <thead>
@@ -259,92 +242,6 @@
   </tbody>
 </table>
 </section>
-
-
-
-<section id="exec">
-<form>
-  <label>Execute command</label>
-  <input type="text" placeholder="e.g. uptime">
-</form>
-<pre><code id="exec_stdout"></code></pre>
-<pre><code id="exec_stderr"></code></pre>
-</section>
-
-<section id="os">
-<table id="os_device">
-  <caption>Device</caption>
-  <thead>
-  <tr>
-    <th>Arch</th>
-    <th>Endianness</th>
-    <th>Hostname</th>
-    <th>Platform</th>
-    <th>Release</th>
-    <th>Type</th>
-    <th>Uptime</th>
-    <th>Tmpdir</th>
-  </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-<table id="os_status">
-  <caption>Status</caption>
-  <thead>
-  <tr>
-    <th>Load avg</th>
-    <th>Total mem</th>
-    <th>Free mem</th>
-  </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-<table id="os_userInfo">
-  <caption>User Info</caption>
-  <thead>
-  <tr>
-    <th>UID</th>
-    <th>GID</th>
-    <th>Username</th>
-    <th>Homedir</th>
-    <th>exec</th>
-  </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-<table id="os_cpus">
-  <caption>CPUs</caption>
-  <thead>
-  <tr>
-    <th>Model</th>
-    <th>Speed</th>
-    <th>Times</th>
-  </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-<table id="os_networkInterfaces">
-  <caption>Network Interfaces</caption>
-  <thead>
-  <tr>
-    <th>Address</th>
-    <th>Netmask</th>
-    <th>Family</th>
-    <th>MAC</th>
-    <th>Internal</th>
-    <th>CIDR</th>
-    <th>Scope ID</th>
-  </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-</section>
-</main>
 
 
 </body>

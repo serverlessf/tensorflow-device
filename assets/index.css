@@ -49,6 +49,9 @@ body.os #aos {
   border-color: blueviolet;
 }
 
+[err] {
+  color: darkred;
+}
 #stderr {
   border-left-color: red;
   color: darkred;

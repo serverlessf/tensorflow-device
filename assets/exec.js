@@ -19,12 +19,12 @@ function onReady() {
   console.log('onReady()', o);
   if(o.cmd) $cmd.value = o.cmd;
   if(o.interval) $interval.value = o.interval;
-  m.render($h2, o.process? m([o.process, m('small', o.engine||'')]):null);
+  m.render($h2, o.process? m([o.process, m('div', m('small', o.engine||''))]):null);
   document.body.className = o.process? 'process':'os';
   return o;
 }
 
-async function render(cmd, o) {
+function render(cmd, o) {
   var url = o.process? `/process/${o.process}/exec`:'/exec';
   m.request({method: 'POST', url, data: {cmd}}).then((data) => {
     m.render($stdout, data.stdout);
