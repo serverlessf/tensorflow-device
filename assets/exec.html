@@ -8,8 +8,8 @@
 <script src="https://unpkg.com/moment/min/moment.min.js"></script>
 <script src="https://unpkg.com/mithril/mithril.js"></script>
 <link rel="stylesheet" href="index.css">
-<script async src="os.js"></script>
-<title>OS: DEVICE</title>
+<script async src="exec.js"></script>
+<title>EXEC: DEVICE</title>
 </head>
 
 
@@ -21,18 +21,12 @@
   <ul>
     <li><a href="/slist.html">Service</a></li>
     <li><a href="/plist.html">Process</a></li>
-    <li><a href="/os.html" active>OS</a></li>
+    <li><a href="/os.html">OS</a></li>
   </ul>
 </label></nav>
 
 
 <main><section>
-<form txt="c">
-  <a btn href="/exec.html?cmd=top -n 1&interval=1000" primary>Top</a>
-  <a btn href="/exec.html">Exec</a>
-  <a btn href="/exec.html?cmd=sudo reboot">Reboot</a>
-  <a btn href="/exec.html?cmd=sudo reboot">Reboot</a>
-</form>
 <table id="device">
   <caption>Device</caption>
   <thead><tr>
