@@ -11,7 +11,7 @@ const $top = document.querySelector('#top');
 const $logs = document.querySelector('#logs');
 const $access = document.querySelector('#access');
 const $download = document.querySelector('#download');
-const $update = document.querySelector('#update');
+const $upload = document.querySelector('#upload');
 const $state = document.querySelector('#state tbody');
 const $policy = document.querySelector('#policy tbody');
 const $mounts = document.querySelector('#mounts tbody');
@@ -44,10 +44,10 @@ function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
   m.request({method: 'GET', url: '/process/'+o.process}).then((p) => {
-    var q = `process=${o.process}&engine=${p.Config.Image}`;
+    var q = `process=${o.process}&engine=${p.Config.Image}&update=1`;
     $top.setAttribute('href', `/ptop.html?${q}`);
     $logs.setAttribute('href', `/plogs.html?${q}`);
-    $update.setAttribute('href', `/update.html?${q}`);
+    $upload.setAttribute('href', `/upload.html?${q}`);
     $access.setAttribute('href', `/process/${o.process}/fs/`);
     $download.setAttribute('href', `/process/${o.process}/export`);
   });

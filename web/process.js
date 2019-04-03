@@ -6,6 +6,8 @@ const express = require('express');
 Array = require('extra-array');
 const cp = require('extra-cp');
 const fs = require('fs-extra');
+const config = require('../config');
+const fetch = require('../fetch');
 const path = require('path');
 
 
@@ -39,6 +41,19 @@ app.get('/', wrap(async (req, res) => {
   for(var k in filters)
     filters[k] = Array.ensure(filters[k]);
   res.json(await docker.listContainers(options));
+}));
+app.post('/', wrap(async (req, res) => {
+  var {id, name, git, url} = req.body; name = name||id;
+  var file = (req.files||{}).file;
+  name = name||path.parse(git||url||file.name).name;
+  await fetch({git, url, file}, ROOT, name);
+  var dir = path.join(ROOT, name);
+  var p = config.read(dir);
+  var pnew = Object.assign({}, config.read(dir), req.body, {name});
+  pnew.vervion = Math.max(pnew.version, p? p.version+1:0);
+  pnew.env['SERVICE'] = name;
+  pnew.env['DEVICE'] = '127.0.0.1:'+PORT;
+  config.write(pnew); res.json(pnew);
 }));
 app.get('/:id', wrap(async (req, res) => {
   var {id} = req.params, options = req.body;

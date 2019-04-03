@@ -36,6 +36,7 @@ async function fetchFile(file, dir, name=null) {
   var name = name||path.parse(file.name).name;
   var pkg = path.join(dir, name);
   var out = path.join(pkg, path.basename(file.name));
+  if(fs.existsSync(pkg)) await fs.remove(pkg+'/*');
   fs.mkdirSync(pkg, {recursive: true});
   await new Promise((fres, frej) => file.mv(out, (err) => err? frej(err):fres()));
   await decompress(out, pkg);
