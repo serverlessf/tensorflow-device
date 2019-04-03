@@ -1,7 +1,8 @@
 const $h2 = document.querySelector('h2');
+const $p = document.querySelector('p');
+const $clear = document.querySelector('#clear');
 const $stdout = document.querySelector('#stdout');
 const $stderr = document.querySelector('#stderr');
-const $p = document.querySelector('p');
 const ansi_up = new AnsiUp();
 var options = {};
 
@@ -41,8 +42,16 @@ function request(o) {
     (err) => render(err, '', err.message||'', o));
 }
 
+function onClear(o) {
+  m.request({method: 'DELETE', url: `/process/${o.process}/logs`}).then((data) => {
+    iziToast.success({message: `Cleared logs of process ${o.process}`});
+  }, (err) => iziToast.error({message: JSON.parse(err.message).stderr}));
+  return false;
+}
+
 
 
 options = onReady();
 request(options);
 setInterval(() => request(options), 4000);
+$clear.onclick = () => onClear(options);

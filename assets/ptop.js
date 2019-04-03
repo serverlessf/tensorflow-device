@@ -1,6 +1,6 @@
 const $h2 = document.querySelector('h2');
-const $table = document.querySelector('tbody');
 const $p = document.querySelector('p');
+const $table = document.querySelector('tbody');
 var options = {};
 
 

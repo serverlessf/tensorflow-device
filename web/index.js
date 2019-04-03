@@ -30,7 +30,7 @@ app.use('/process', webprocess);
 app.use('/exec', webexec);
 app.use('/os', webos);
 app.use((err, req, res, next) => {
-  console.error(err.stack)
+  console.error(err, err.stack)
   res.status(err.statusCode||500).send(err.json||err);
 })
 // app.use((req, res, next) => {

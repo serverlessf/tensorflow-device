@@ -10,7 +10,7 @@ const path = require('path');
 
 
 
-const REFS = /\/process\/.*?\/fs/;
+const REFS = /\/.*?\/fs/;
 const ROOT = process.cwd()+'/_data/process';
 
 const app = express();
@@ -50,7 +50,7 @@ app.delete('/:id', wrap(async (req, res) => {
 }));
 app.post('/:id/exec', async (req, res) => {
   var {id} = req.params, options = req.body||{}, cmd = options.cmd||'';
-  var opts = commandOptions(req.body, [], ['cmd'])
+  var opts = commandOptions(options, [], ['cmd'])
   res.json(await cp.exec(`docker exec ${opts} ${id} ${cmd}`));
 });
 app.get('/:id/export', wrap(async (req, res) => {
@@ -70,6 +70,12 @@ app.post('/:id/fs*', wrap(async (req, res) => {
   var rel = req.url.replace(REFS, '')||'/';
   var abs = path.join(ROOT, id, rel);
   await file.mv(abs); res.json(file.size);
+}));
+app.delete('/:id/logs', wrap(async (req, res) => {
+  var {id} = req.params, options = req.body;
+  var cmd = `sudo sh -c "truncate -s 0 /var/lib/docker/containers/*/*-json.log"`;
+  var opts = commandOptions(options, [], ['cmd'])
+  res.json(await cp.exec(`docker exec ${opts} ${id} ${cmd}`));
 }));
 app.all('/:id/:fn', wrap(async (req, res) => {
   var {id, fn} = req.params;

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" type="image/png" href="https://i.ibb.co/RCFCcWy/mushroom-512.png">
+<link href="https://fonts.googleapis.com/css?family=Baloo+Chettan" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/barecss@1.1.1/css/bare.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
+<script src="https://unpkg.com/moment/min/moment.min.js"></script>
+<script src="https://unpkg.com/mithril/mithril.js"></script>
+<link rel="stylesheet" href="index.css">
+<script async src="pdata.js"></script>
+<title>PROCESS DATA: DEVICE</title>
+</head>
+
+
+<body class="process">
+<nav><label><input type="checkbox"><header><a href="/">
+  <img src="https://i.ibb.co/RCFCcWy/mushroom-512.png"> DEVICE
+  </a></header>
+  <ul>
+    <li><a href="/slist.html" id="aservice">Service</a></li>
+    <li><a href="/plist.html" id="aprocess">Process</a></li>
+    <li><a href="/os.html" id="aos">OS</a></li>
+  </ul>
+</label></nav>
+
+
+<main><section>
+<h2></h2>
+<p txt="c" err></p>
+<form>
+  <div txt="c">
+  <button id="start">Start</button>
+  <button id="stop">Stop</button>
+  <button id="kill">Kill</button>
+  <button id="restart">Restart</button>
+  <button id="pause">Pause</button>
+  <button id="unpause">Unpause</button>
+  <button id="remove">Remove</button>
+  </div>
+  <div txt="c">
+  <a btn id="top">Top</a>
+  <a btn id="logs">Logs</a>
+  <a btn id="access">Access</a>
+  <a btn id="download">Download</a>
+  <a btn id="update">Update</a>
+  </div>
+</form>
+<table id="state">
+  <caption>State</caption>
+  <thead><tr>
+    <th>Status</th>
+    <th>Created</th>
+    <th>Started</th>
+    <th>Finished</th>
+    <th>Restarts</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<table id="policy">
+  <caption>Policy</caption>
+  <thead><tr>
+    <th>Working Dir</th>
+    <th>Port Bindings</th>
+    <th>Restart</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<table id="mounts">
+  <caption>Mounts</caption>
+  <thead><tr>
+    <th>Type</th>
+    <th>Source</th>
+    <th>Destination</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<table id="env">
+  <caption>Env</caption>
+  <thead><tr>
+    <th>Variable</th>
+    <th>Value</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<table id="cmd">
+  <caption>Cmd</caption>
+  <tbody></tbody>
+</table>
+</section></main>
+
+
+</body>
+</html>
