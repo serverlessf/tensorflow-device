@@ -5,15 +5,17 @@
 <link rel="shortcut icon" type="image/png" href="https://i.ibb.co/RCFCcWy/mushroom-512.png">
 <link href="https://fonts.googleapis.com/css?family=Baloo+Chettan" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/barecss@1.1.1/css/bare.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
 <script src="https://unpkg.com/moment/min/moment.min.js"></script>
 <script src="https://unpkg.com/mithril/mithril.js"></script>
 <link rel="stylesheet" href="index.css">
-<script async src="os.js"></script>
-<title>OS: DEVICE</title>
+<script async src="pdata.js"></script>
+<title>SERVICE DATA: DEVICE</title>
 </head>
 
 
-<body class="os">
+<body class="service">
 <nav><label><input type="checkbox"><header><a href="/">
   <img src="https://i.ibb.co/RCFCcWy/mushroom-512.png"> DEVICE
   </a></header>
@@ -26,67 +28,50 @@
 
 
 <main><section>
+<h2></h2>
 <form txt="c">
-  <a btn href="/exec.html?cmd=top -n 1&interval=1000" primary>Top</a>
-  <a btn href="/exec.html?cmd=top -n 1&interval=1000">Crontab</a>
-  <a btn href="/exec.html">Exec</a>
-  <a btn href="/exec.html?cmd=shutdown -h now">Reboot</a>
-  <a btn href="/exec.html?cmd=sudo reboot">Shutdown</a>
+  <a btn id="run">Run</a>
+  <a btn id="access">Access</a>
+  <a btn id="upload">Upload</a>
+  <a btn id="remove">Remove</a>
 </form>
-<table id="device">
-  <caption>Device</caption>
+<table id="state">
+  <caption>State</caption>
   <thead><tr>
-    <th>Arch</th>
-    <th>Endianness</th>
-    <th>Hostname</th>
-    <th>Platform</th>
-    <th>Release</th>
+    <th>Created</th>
+    <th>Running</th>
+    <th>Stopped</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<table id="policy">
+  <caption>Policy</caption>
+  <thead><tr>
+    <th>Working Dir</th>
+    <th>Ports</th>
+    <th>Copy FS</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<table id="mounts">
+  <caption>Mounts</caption>
+  <thead><tr>
     <th>Type</th>
-    <th>Uptime</th>
-    <th>Tmpdir</th>
+    <th>Source</th>
+    <th>Destination</th>
   </tr></thead>
   <tbody></tbody>
 </table>
-<table id="status">
-  <caption>Status</caption>
+<table id="env">
+  <caption>Env</caption>
   <thead><tr>
-    <th>Load avg</th>
-    <th>Total mem</th>
-    <th>Free mem</th>
+    <th>Variable</th>
+    <th>Value</th>
   </tr></thead>
   <tbody></tbody>
 </table>
-<table id="userInfo">
-  <caption>User Info</caption>
-  <thead><tr>
-    <th>UID</th>
-    <th>GID</th>
-    <th>Username</th>
-    <th>Homedir</th>
-    <th>exec</th>
-  </tr></thead>
-  <tbody></tbody>
-</table>
-<table id="cpus">
-  <caption>CPUs</caption>
-  <thead><tr>
-    <th>Model</th>
-    <th>Speed</th>
-    <th>Times</th>
-  </tr></thead>
-  <tbody></tbody>
-</table>
-<table id="networkInterfaces">
-  <caption>Network Interfaces</caption>
-  <thead><tr>
-    <th>Address</th>
-    <th>Netmask</th>
-    <th>Family</th>
-    <th>MAC</th>
-    <th>Internal</th>
-    <th>CIDR</th>
-    <th>Scope ID</th>
-  </tr></thead>
+<table id="cmd">
+  <caption>Cmd</caption>
   <tbody></tbody>
 </table>
 </section></main>

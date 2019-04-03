@@ -2,11 +2,9 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="shortcut icon" type="image/png" href="https://cdn3.iconfinder.com/data/icons/restaurant-volume-2/512/mushroom-512.png">
+<link rel="shortcut icon" type="image/png" href="https://i.ibb.co/RCFCcWy/mushroom-512.png">
 <link href="https://fonts.googleapis.com/css?family=Baloo+Chettan" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/barecss@1.1.1/css/bare.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
 <script src="https://unpkg.com/moment/min/moment.min.js"></script>
 <script src="https://unpkg.com/mithril/mithril.js"></script>
 <link rel="stylesheet" href="index.css">
@@ -15,154 +13,83 @@
 </head>
 
 
-
-<body>
-<nav>
-<label>
-<input type="checkbox">
-<header><a href="#os"><img src="https://cdn3.iconfinder.com/data/icons/restaurant-volume-2/512/mushroom-512.png"> DEVICE</a></header>
-<ul>
-  <li><a id="a_service" href="#slist">Service</a></li>
-  <li><a id="a_process" href="#plist">Process</a></li>
-  <li><a id="a_exec" href="#exec">Exec</a></li>
-  <li><a id="a_os" href="#os" active>OS</a></li>
-  <li>
-    <a>Help</a>
-    <menu>
-      <menuitem><a href="https://www.youtube.com/watch?v=GNKeps6pIao">Making Activated Carbon</a></menuitem>
-      <menuitem><a href="https://www.youtube.com/watch?v=s5PwfEqTMyg">How To Grow Microgreens</a></menuitem>
-    </menu>
-  </li>
-</ul>
-</label>
-</nav>
+<body class="os">
+<nav><label><input type="checkbox"><header><a href="/">
+  <img src="https://i.ibb.co/RCFCcWy/mushroom-512.png"> DEVICE
+  </a></header>
+  <ul>
+    <li><a href="/slist.html" id="aservice">Service</a></li>
+    <li><a href="/plist.html" id="aprocess">Process</a></li>
+    <li><a href="/os.html" id="aos">OS</a></li>
+  </ul>
+</label></nav>
 
 
-<main>
-<section id="slist">
+<main><section>
 <form txt="c">
-  <a btn href="#spost">New Service</a>
+  <a btn href="/exec.html?cmd=top -n 1&interval=1000" primary>Top</a>
+  <a btn href="/exec.html?cmd=top -n 1&interval=1000">Crontab</a>
+  <a btn href="/exec.html">Exec</a>
+  <a btn href="/exec.html?cmd=shutdown -h now">Reboot</a>
+  <a btn href="/exec.html?cmd=sudo reboot">Shutdown</a>
 </form>
-<table>
-  <thead>
-  <tr>
-    <th>Name</th>
-    <th>Version</th>
-    <th>Engine</th>
-    <th>Running</th>
-    <th>Ports</th>
-  </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-</section>
-
-<section id="spost">
-<form>
-<grid>
-  <div col="1/1">
-    <label>Name</label>
-    <input type="text" name="name" id="service_name">
-  </div>
-  <div col="1/3">
-    <label>Git</label>
-    <input type="text" name="git" id="service_git">
-  </div>
-  <div col="1/3">
-    <label>URL</label>
-    <input type="text" name="url" id="service_url">
-  </div>
-  <div col="1/3">
-    <label>File</label>
-    <input type="file" name="service" id="service_file">
-  </div>
-  <div col="1/1" txt="c">
-    <input type="submit" value="Create Service">
-  </div>
-</grid>
-</form>
-</section>
-
-<section id="sdata">
-<h2></h2>
-<form txt="c">
-  <a btn id="service_run">Run</a>
-  <a btn id="service_access">Access</a>
-  <a btn id="service_update">Update</a>
-  <a btn id="service_delete">Delete</a>
-</form>
-<table id="service_status">
-  <caption>Status</caption>
-  <thead>
-  <tr>
-    <th>Created</th>
-    <th>Running</th>
-    <th>Stopped</th>
-  </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-<table id="service_policy">
-  <caption>Policy</caption>
-  <thead>
-  <tr>
-    <th>Working Dir</th>
-    <th>Ports</th>
-    <th>Copy FS</th>
-  </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-<table id="service_mounts">
-  <caption>Mounts</caption>
-  <thead>
-  <tr>
+<table id="device">
+  <caption>Device</caption>
+  <thead><tr>
+    <th>Arch</th>
+    <th>Endianness</th>
+    <th>Hostname</th>
+    <th>Platform</th>
+    <th>Release</th>
     <th>Type</th>
-    <th>Source</th>
-    <th>Destination</th>
-  </tr>
-  </thead>
-  <tbody>
-  </tbody>
+    <th>Uptime</th>
+    <th>Tmpdir</th>
+  </tr></thead>
+  <tbody></tbody>
 </table>
-<table id="service_env">
-  <caption>Env</caption>
-  <thead>
-  <tr>
-    <th>Variable</th>
-    <th>Value</th>
-  </tr>
-  </thead>
-  <tbody>
-  </tbody>
+<table id="status">
+  <caption>Status</caption>
+  <thead><tr>
+    <th>Load avg</th>
+    <th>Total mem</th>
+    <th>Free mem</th>
+  </tr></thead>
+  <tbody></tbody>
 </table>
-<table id="service_cmd">
-  <caption>Cmd</caption>
-  <tbody>
-  </tbody>
+<table id="userInfo">
+  <caption>User Info</caption>
+  <thead><tr>
+    <th>UID</th>
+    <th>GID</th>
+    <th>Username</th>
+    <th>Homedir</th>
+    <th>exec</th>
+  </tr></thead>
+  <tbody></tbody>
 </table>
-</section>
-
-
-
-<section id="plist">
-<table>
-  <thead>
-  <tr>
-    <th>ID</th>
-    <th>Engine</th>
-    <th>Status</th>
-    <th>Ports</th>
-  </tr>
-  </thead>
-  <tbody>
-  </tbody>
+<table id="cpus">
+  <caption>CPUs</caption>
+  <thead><tr>
+    <th>Model</th>
+    <th>Speed</th>
+    <th>Times</th>
+  </tr></thead>
+  <tbody></tbody>
 </table>
-</section>
-
+<table id="networkInterfaces">
+  <caption>Network Interfaces</caption>
+  <thead><tr>
+    <th>Address</th>
+    <th>Netmask</th>
+    <th>Family</th>
+    <th>MAC</th>
+    <th>Internal</th>
+    <th>CIDR</th>
+    <th>Scope ID</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+</section></main>
 
 
 </body>
