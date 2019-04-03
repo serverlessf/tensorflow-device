@@ -53,9 +53,9 @@ function onReady() {
   $access.setAttribute('href', `/service/${o.service}/fs/`);
   m.request({method: 'GET', url: '/service/'+o.service}).then((p) => {
     var q = `service=${o.service}&engine=${o.engine}&update=1`;
-    $upload.setAttribute('href', `/upload.html?${q}`);
     $access.setAttribute('href', `/service/${o.service}/fs/`);
     $download.setAttribute('href', `/service/${o.service}/export`);
+    $upload.setAttribute('href', `/upload.html?${q}`);
   });
   return o;
 }

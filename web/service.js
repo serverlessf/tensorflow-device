@@ -3,6 +3,7 @@ const dockerNames = require('docker-names');
 const finalhandler = require('finalhandler');
 const serveStatic = require('serve-static');
 const serveIndex = require('serve-index');
+const archiver = require('archiver');
 const Docker = require('dockerode');
 const express = require('express');
 const cp = require('extra-cp');
@@ -111,6 +112,15 @@ app.post('/:name/run', wrap(async (req, res) => {
   if(o.copyfs) await fs.symlink(path.join(PROOT, pname), path.join(PROOT, id));
   res.json({id, name: pname});
 }));
+app.get('/:name/export', (req, res) => {
+  var {name} = req.params;
+  var dir = path.join(ROOT, name);
+  res.writeHead(200, {'content-type': 'application/zip'});
+  var archive = archiver('zip', {zlib: {level: 9}});
+  archive.pipe(res);
+  archive.directory(dir+'/', false);
+  archive.finalize();
+});
 fs.mkdirSync(ROOT, {recursive: true});
 config.readAll(ROOT, services);
 module.exports = app;
