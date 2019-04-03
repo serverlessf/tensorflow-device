@@ -10,11 +10,11 @@ const $remove = document.querySelector('#remove');
 const $access = document.querySelector('#access');
 const $download = document.querySelector('#download');
 const $upload = document.querySelector('#upload');
-const $state = document.querySelector('#state');
-const $policy = document.querySelector('#policy');
-const $mounts = document.querySelector('#mounts');
-const $env = document.querySelector('#env');
-const $cmd = document.querySelector('#cmd');
+const $state = document.querySelector('#state tbody');
+const $policy = document.querySelector('#policy tbody');
+const $mounts = document.querySelector('#mounts tbody');
+const $env = document.querySelector('#env tbody');
+const $cmd = document.querySelector('#cmd tbody');
 var options = {};
 
 
@@ -49,11 +49,21 @@ function onReady() {
 
 async function request(o) {
   console.log('request()', o);
-  var id = o.service;
-  var s = await m.request({method: 'GET', url: '/service/'+id});
+  var name = o.service;
+  var sp = m.request({method: 'GET', url: '/service/'+name});
+  var psp = m.request({method: 'GET', url: '/process?all=1'});
+  var [s, ps] = Promise.all([sp, psp]);
+  var running = 0, stopped = 0;
+  for(var p of ps) {
+    var pname = p.Names[0].substring(1), st = p.State.Status;
+    if(pname.replace(/\..*$/, '')!==name) continue;
+    if(st==='running') running++;
+    else if(st==='stopped') stopped++;
+  }
   m.render($h2, [s.name, m('div', m('small', s.engine))]);
-  m.render($status, m('tr', [
+  m.render($state, m('tr', [
     m('td', moment(s.created).fromNow()),
+    m('td', running), m('td', stopped),
   ]));
   m.render($policy, m('tr', [
     m('td', s.workdir),
