@@ -5,7 +5,7 @@ h1, h2 {
 body, form * {
   font-family: 'Baloo Chettan', cursive;
 }
-body section {
+body section[id] {
   display: none;
 }
 body.slist #slist {
@@ -31,6 +31,10 @@ body.exec #exec {
 }
 body.os #os {
   display: block;
+}
+nav:not([class]) ul a[active] {
+  color: blueviolet;
+  border-bottom-color: blueviolet;
 }
 body.slist #a_service {
   color: blueviolet;

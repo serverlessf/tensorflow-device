@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" type="image/png" href="https://i.ibb.co/RCFCcWy/mushroom-512.png">
+<link href="https://fonts.googleapis.com/css?family=Baloo+Chettan" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/barecss@1.1.1/css/bare.min.css">
+<script src="https://unpkg.com/moment/min/moment.min.js"></script>
+<script src="https://unpkg.com/mithril/mithril.js"></script>
+<link rel="stylesheet" href="index.css">
+<script async src="os.js"></script>
+<title>OS: DEVICE</title>
+</head>
+
+
+
+<body>
+<nav><label><input type="checkbox"><header><a href="#os">
+  <img src="https://i.ibb.co/RCFCcWy/mushroom-512.png"> DEVICE
+  </a></header>
+  <ul>
+    <li><a href="/slist.html">Service</a></li>
+    <li><a href="/plist.html">Process</a></li>
+    <li><a href="/exec.html">Exec</a></li>
+    <li><a href="/os.html" active>OS</a></li>
+  </ul>
+</label></nav>
+
+
+<main><section>
+<table id="device">
+  <caption>Device</caption>
+  <thead><tr>
+    <th>Arch</th>
+    <th>Endianness</th>
+    <th>Hostname</th>
+    <th>Platform</th>
+    <th>Release</th>
+    <th>Type</th>
+    <th>Uptime</th>
+    <th>Tmpdir</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<table id="status">
+  <caption>Status</caption>
+  <thead><tr>
+    <th>Load avg</th>
+    <th>Total mem</th>
+    <th>Free mem</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<table id="userInfo">
+  <caption>User Info</caption>
+  <thead><tr>
+    <th>UID</th>
+    <th>GID</th>
+    <th>Username</th>
+    <th>Homedir</th>
+    <th>exec</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<table id="cpus">
+  <caption>CPUs</caption>
+  <thead><tr>
+    <th>Model</th>
+    <th>Speed</th>
+    <th>Times</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<table id="networkInterfaces">
+  <caption>Network Interfaces</caption>
+  <thead><tr>
+    <th>Address</th>
+    <th>Netmask</th>
+    <th>Family</th>
+    <th>MAC</th>
+    <th>Internal</th>
+    <th>CIDR</th>
+    <th>Scope ID</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+</section></main>
+
+
+</body>
+</html>

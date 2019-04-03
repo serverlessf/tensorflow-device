@@ -33,6 +33,11 @@ app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(err.statusCode||500).send(err.json||err);
 })
+// app.use((req, res, next) => {
+//   var f = path.join(AROOT, req.url);
+//   if(!f.endsWith('.html') && !fs.existsSync(f)) return next();
+//   res.render(req.url, );
+// });
 app.use(express.static(ROOT+'/assets', {extensions: ['html']}));
 module.exports = app;
 
