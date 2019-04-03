@@ -24,7 +24,8 @@ function onReady() {
   return o;
 }
 
-function render(cmd, o) {
+function request(cmd, o) {
+  console.log('request()', cmd, o);
   var url = o.process? `/process/${o.process}/exec`:'/exec';
   m.request({method: 'POST', url, data: {cmd}}).then((data) => {
     m.render($stdout, data.stdout);
@@ -37,8 +38,8 @@ function render(cmd, o) {
 
 
 options = onReady();
-if($cmd.value) render($cmd.value, options);
-$cmd.onchange = () => render($cmd.value, options) && false;
+if($cmd.value) request($cmd.value, options);
+$cmd.onchange = () => request($cmd.value, options) && false;
 setInterval(() => {
-  if(parseInt($interval.value)) render($cmd.value, options);
+  if(parseInt($interval.value)) request($cmd.value, options);
 }, 1000);

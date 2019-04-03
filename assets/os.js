@@ -10,8 +10,8 @@ const $networkInterfaces = document.querySelector('#networkInterfaces tbody');
 
 
 
-async function render() {
-  console.log('render()');
+async function request() {
+  console.log('request()');
   var o = await m.request({method: 'GET', url: '/os'});
   var ui = o.userInfo, ni = o.networkInterfaces;
   m.render($device, m('tr', DEVICE.map(k => m('td', o[k]))));
@@ -35,5 +35,5 @@ async function render() {
 
 
 
-render();
-setInterval(render, 1000);
+request();
+setInterval(request, 1000);

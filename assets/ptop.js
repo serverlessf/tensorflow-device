@@ -1,6 +1,6 @@
 const $h2 = document.querySelector('h2');
-const $p = document.querySelector('p');
 const $table = document.querySelector('tbody');
+const $p = document.querySelector('p');
 var options = {};
 
 
@@ -18,7 +18,8 @@ function onReady() {
   return o;
 }
 
-function render(o) {
+function request(o) {
+  console.log('request()', o);
   m.request({method: 'GET', url: `/process/${o.process}/top`}).then((t) => {
     m.render($table, t.Processes.map(p => m('tr', p.map(v => m('td', v)))));
     m.render($p, null);
@@ -28,5 +29,5 @@ function render(o) {
 
 
 options = onReady();
-render(options);
-setInterval(() => render(options), 1000);
+request(options);
+setInterval(() => request(options), 1000);

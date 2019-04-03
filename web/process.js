@@ -75,7 +75,7 @@ app.all('/:id/:fn', wrap(async (req, res) => {
   var {id, fn} = req.params;
   var options = ['changes'].includes(fn)? undefined:req.body;
   var data = await docker.getContainer(id)[fn](options);
-  return fn==='logs'? res.send(data):res.json(data);
+  return res.json(data);
 }));
 fs.mkdirSync(ROOT, {recursive: true});
 module.exports = app;
