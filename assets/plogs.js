@@ -53,5 +53,5 @@ function onClear(o) {
 
 options = onReady();
 request(options);
-setInterval(() => request(options), 4000);
+setInterval(() => request(options), 1000);
 $clear.onclick = () => onClear(options);

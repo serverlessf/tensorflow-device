@@ -25,8 +25,16 @@ async function request(o) {
   )))])));
 }
 
+function onPrune(o) {
+  m.request({method: 'POST', url: '/process/prune'}).then((data) => {
+    iziToast.success({message: `${(data.ContainersDeleted||[]).length} processes removed`});
+  }, (err) => iziToast.error({message: err.message}));
+  return false;
+}
+
 
 
 options = onReady();
 request(options);
-setInterval(() => request(options), 5000);
+setInterval(() => request(options), 1000);
+$prune.onclick = () => onPrune(options);

@@ -57,6 +57,10 @@ app.post('/', wrap(async (req, res) => {
   pnew.env['DEVICE'] = '127.0.0.1:'+PORT;
   config.write(dir, pnew); res.json(pnew);
 }));
+app.post('/prune', wrap(async (req, res) => {
+  var options = req.body;
+  res.json(await docker.pruneContainers(options));
+}));
 app.get('/:id', wrap(async (req, res) => {
   var {id} = req.params, options = req.body;
   res.json(await docker.getContainer(id).inspect(options));

@@ -106,8 +106,9 @@ function onButton(o, fn, pre, method='POST') {
 
 options = onReady();
 request(options);
-setInterval(() => request(options), 5000);
+setInterval(() => request(options), 1000);
 $run.onclick = () => onRun(options);
+$start.onclick = () => onButton(options, 'start', 'started');
 $stop.onclick = () => onButton(options, 'stop', 'Stopped');
 $kill.onclick = () => onButton(options, 'kill', 'Killed');
 $restart.onclick = () => onButton(options, 'restart', 'Restarted');

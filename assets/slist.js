@@ -32,4 +32,4 @@ async function request(o) {
 
 options = onReady();
 request(options);
-setInterval(() => request(options), 5000);
+setInterval(() => request(options), 1000);
