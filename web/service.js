@@ -73,7 +73,8 @@ app.delete('/:name', wrap(async (req, res) => {
   for(var c of cs.filter(c => c.Names[0].includes(name)))
     jobs.push(docker.getContainer(c.Id).stop(req.body));
   await Promise.all(jobs);
-  res.json(services[name] = null);
+  delete services[name];
+  res.json(null);
 }));
 app.get('/:name', (req, res) => {
   var {name} = req.params;

@@ -95,8 +95,8 @@ function onRun(o) {
   return false;
 }
 
-function onButton(o, fn, pre) {
-  m.request({method: 'POST', url: `/service/${o.service}/${fn}`}).then((data) => {
+function onButton(o, fn, pre, method='POST') {
+  m.request({method, url: `/service/${o.service}/${fn}`}).then((data) => {
     iziToast.success({message: `${pre} service ${o.service}`});
   }, (err) => iziToast.error({message: err.message}));
   return false;
@@ -113,4 +113,4 @@ $kill.onclick = () => onButton(options, 'kill', 'Killed');
 $restart.onclick = () => onButton(options, 'restart', 'Restarted');
 $pause.onclick = () => onButton(options, 'pause', 'Paused');
 $unpause.onclick = () => onButton(options, 'unpause', 'Unpaused');
-$remove.onclick = () => onButton(options, 'remove', 'Removed');
+$remove.onclick = () => onButton(options, '', 'Removed', 'DELETE');

@@ -18,7 +18,7 @@ async function dirDehusk(dir) {
 async function fetchGit(url, dir, name=null) {
   var name = name||path.parse(url).file;
   var pkg = path.join(dir, name);
-  if(fs.existsSync(pkg)) await fs.remove(pkg+'/*');
+  if(fs.existsSync(pkg)) await fs.remove(pkg);
   var repo = url.replace(/#.*/, ''), branch = url.substring(repo.length+1)||'master';
   var cmd = `git clone --single-branch --branch ${branch} --depth=1 ${repo} ${name}`;
   await cp.exec(cmd, {cwd: dir});

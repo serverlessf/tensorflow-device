@@ -28,9 +28,10 @@ function onSubmit(o) {
   var data = new FormData($form);
   if(o.update) data.update = true;
   console.log('onSubmit()', data);
+  var pre = o.update? 'Updated':'Created';
   var type = o.service!=null? 'service':'process';
   m.request({method: 'POST', url: '/'+type, data}).then((data) => {
-    iziToast.success({message: `Created ${type} ${$form.name.value}`});
+    iziToast.success({message: `${pre} ${type} ${$form.name.value}`});
   }, (err) => iziToast.error({message: err.message}));
   return false;
 }
