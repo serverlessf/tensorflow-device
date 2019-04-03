@@ -59,7 +59,7 @@ app.post('/', wrap(async (req, res) => {
   await fetch({git, url, file}, ROOT, name);
   var dir = path.join(ROOT, name);
   var snew = Object.assign({}, config.read(dir), req.body, {name});
-  snew.vervion = Math.max(snew.version, s? s.version+1:0);
+  snew.version = Math.max(snew.version, s? s.version+1:0);
   snew.env['SERVICE'] = name;
   snew.env['DEVICE'] = '127.0.0.1:'+PORT;
   config.write(dir, snew);

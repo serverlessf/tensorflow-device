@@ -26,7 +26,8 @@ function onReady() {
 
 function onSubmit(o) {
   var data = new FormData($form);
-  if(o.update) data.update = true;
+  data.set('name', o.service||o.process);
+  data.set('update', o.update);
   console.log('onSubmit()', data);
   var pre = o.update? 'Updated':'Created';
   var type = o.service!=null? 'service':'process';
