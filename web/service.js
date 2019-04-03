@@ -60,6 +60,7 @@ app.post('/', wrap(async (req, res) => {
   snew.vervion = Math.max(snew.version, s? s.version+1:0);
   snew.env['SERVICE'] = name;
   snew.env['DEVICE'] = '127.0.0.1:'+PORT;
+  config.write(dir, snew);
   res.json(services[name] = snew);
 }));
 app.delete('/:name', wrap(async (req, res) => {

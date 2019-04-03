@@ -18,9 +18,9 @@ function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
   m.render($h2, [o.service||o.process, m('div', m('small', o.engine||''))]);
-  document.body.className = o.service? 'service':'process';
+  document.body.className = o.service==null? 'service':'process';
   if(o.update) $name.setAttribute('disabled', 'disabled');
-  $name.value = o.service||o.process;
+  $name.value = o.service||o.process||'';
   return o;
 }
 
@@ -28,7 +28,7 @@ function onSubmit(o) {
   var data = new FormData($form);
   if(o.update) data.update = true;
   console.log('onSubmit()', data);
-  var type = o.service? 'service':'process';
+  var type = o.service==null? 'service':'process';
   m.request({method: 'POST', url: '/'+type, data}).then((data) => {
     iziToast.success({message: `Created ${type} ${$form.name.value}`});
   }, (err) => iziToast.error({message: err.message}));

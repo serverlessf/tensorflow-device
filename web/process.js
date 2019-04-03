@@ -55,7 +55,7 @@ app.post('/', wrap(async (req, res) => {
   pnew.vervion = Math.max(pnew.version, p? p.version+1:0);
   pnew.env['SERVICE'] = name;
   pnew.env['DEVICE'] = '127.0.0.1:'+PORT;
-  config.write(pnew); res.json(pnew);
+  config.write(dir, pnew); res.json(pnew);
 }));
 app.get('/:id', wrap(async (req, res) => {
   var {id} = req.params, options = req.body;
