@@ -12,7 +12,9 @@ const path = require('path');
 
 
 
+const E = process.env;
 const REFS = /\/.*?\/fs/;
+const PORT = parseInt(E['PORT']||'8080');
 const ROOT = process.cwd()+'/_data/process';
 
 const app = express();

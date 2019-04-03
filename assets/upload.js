@@ -24,9 +24,10 @@ function onReady() {
   return o;
 }
 
-function onSubmit() {
+function onSubmit(o) {
   var data = new FormData($form);
   if(o.update) data.update = true;
+  console.log('onSubmit()', data);
   var type = o.service? 'service':'process';
   m.request({method: 'POST', url: '/'+type, data}).then((data) => {
     iziToast.success({message: `Created ${type} ${$form.name.value}`});
@@ -37,4 +38,4 @@ function onSubmit() {
 
 
 options = onReady();
-$form.onSubmit = onSubmit;
+$form.onsubmit = () => onSubmit(options);

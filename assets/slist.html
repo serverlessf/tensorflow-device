@@ -5,17 +5,15 @@
 <link rel="shortcut icon" type="image/png" href="https://i.ibb.co/RCFCcWy/mushroom-512.png">
 <link href="https://fonts.googleapis.com/css?family=Baloo+Chettan" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/barecss@1.1.1/css/bare.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
 <script src="https://unpkg.com/moment/min/moment.min.js"></script>
 <script src="https://unpkg.com/mithril/mithril.js"></script>
 <link rel="stylesheet" href="index.css">
-<script async src="upload.js"></script>
-<title>UPLOAD: DEVICE</title>
+<script async src="slist.js"></script>
+<title>SERVICE LIST: DEVICE</title>
 </head>
 
 
-<body>
+<body class="service">
 <nav><label><input type="checkbox"><header><a href="/">
   <img src="https://i.ibb.co/RCFCcWy/mushroom-512.png"> DEVICE
   </a></header>
@@ -28,28 +26,19 @@
 
 
 <main><section>
-<h2></h2>
-<form><grid>
-  <div col="1/1">
-    <label>Name</label>
-    <input type="text" name="name" id="name">
-  </div>
-  <div col="1/3">
-    <label>Git</label>
-    <input type="text" name="git" id="git">
-  </div>
-  <div col="1/3">
-    <label>URL</label>
-    <input type="text" name="url" id="url">
-  </div>
-  <div col="1/3">
-    <label>File</label>
-    <input type="file" name="file" id="file">
-  </div>
-  <div col="1/1" txt="c">
-    <input type="submit" value="Upload">
-  </div>
-</grid></form>
+<form txt="c">
+  <a href="/upload.html?service=" btn>New Service</a>
+</form>
+<table>
+  <thead><tr>
+    <th>Name</th>
+    <th>Version</th>
+    <th>Engine</th>
+    <th>Running</th>
+    <th>Ports</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
 </section></main>
 
 
