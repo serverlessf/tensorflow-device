@@ -22,7 +22,7 @@ async function request(o) {
   for(var k in ss) ss[k].processes = 0;
   cs.forEach(c => ss[c.Names[0].substring(1).replace(/\..*$/, '')].processes++);
   m.render($table, Object.values(ss).map(s => m('tr', [
-    m('td', m('a', {href: '#service_'+s.name}, s.name)),
+    m('td', m('a', {href: `/sdata.html?service=${s.name}&engine=${s.engine}`}, s.name)),
     m('td', s.version), m('td', s.engine), m('td', s.processes),
     m('td', s.ports.map(p => m('tag', p)))
   ])));
