@@ -162,18 +162,44 @@ app.post('/:name/run', wrap(async (req, res) => {
   // NOTE: register to QUERY server
   console.log('QUERY', global.QUERY);
   if(!global.QUERY) return;
-  var host = global.QUERY.split(':')[0];
+  var hostname = global.QUERY.split(':')[0];
   var port = parseInt(global.QUERY.split(':')[1]);
-  var method = 'POST', path = '/'+pname;
-  var body = Object.assign({address: o.env['ADDRESS']}, o);
-  var body = JSON.stringify(body);
-  var headers = {
-    'Content-Type': 'application/json',
-    'Content-Length': `${body.length}`
-  }
-  var req = http.request({host, port, method, path, headers});
-  req.end(body);
-  console.log('registering to QUERY', global.QUERY);
+  var method = 'POST', pth = '/'+pname;
+  var postData = Object.assign({address: o.env['ADDRESS']}, o, {
+    ports: undefined, mounts: undefined, env: undefined, cmd: undefined
+  });
+  var postData = JSON.stringify(postData);
+  console.log(postData);
+  const options = {
+    hostname,
+    port,
+    path: pth,
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(postData)
+    }
+  };
+  
+  const qreq = http.request(options, (res) => {
+    console.log(`STATUS: ${res.statusCode}`);
+    console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+    res.setEncoding('utf8');
+    res.on('data', (chunk) => {
+      console.log(`BODY: ${chunk}`);
+    });
+    res.on('end', () => {
+      console.log('No more data in response.');
+    });
+  });
+  
+  qreq.on('error', (e) => {
+    console.error(`problem with request: ${e.message}`);
+  });
+  
+  // write data to request body
+  qreq.write(postData);
+  qreq.end();
 }));
 app.get('/:name/export', (req, res) => {
   var {name} = req.params;
