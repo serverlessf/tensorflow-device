@@ -13,6 +13,10 @@ body.process #aprocess {
   color: blueviolet;
   border-color: blueviolet;
 }
+body.os #aos {
+  color: blueviolet;
+  border-color: blueviolet;
+}
 
 [err] {
   color: darkred;
