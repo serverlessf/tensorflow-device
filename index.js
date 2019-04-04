@@ -5,7 +5,9 @@ const http = require('http');
 
 
 const E = process.env;
+global.IP = ip.address();
 global.PORT = E['PORT']||'8000';
+global.DEVICE = global.IP+':'+global.PORT;
 
 
 
@@ -14,6 +16,5 @@ server.on('clientError', (err, soc) => {
   soc.end('HTTP/1.1 400 Bad Request\r\n\r\n');
 });
 server.listen(global.PORT, () => {
-  global.DEVICE = ip.address()+':'+global.PORT;
   console.log('DEVICE running on '+global.DEVICE);
 });
