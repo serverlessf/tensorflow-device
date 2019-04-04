@@ -1,6 +1,7 @@
 const $h2 = document.querySelector('h2');
 const $form = document.querySelector('form');
 const $name = document.querySelector('#name');
+const $engine = document.querySelector('#engine');
 const $git = document.querySelector('#git');
 const $url = document.querySelector('#url');
 const $file = document.querySelector('#file');
