@@ -11,6 +11,7 @@ const fs = require('fs-extra');
 const config = require('../config');
 const fetch = require('../fetch');
 const path = require('path');
+const http = require('http');
 
 
 
@@ -158,6 +159,15 @@ app.post('/:name/run', wrap(async (req, res) => {
   var id = (stdout||stderr).trim();
   if(o.copyfs) await fs.symlink(path.join(PROOT, pname), path.join(PROOT, id));
   res.json({id, name: pname});
+  // NOTE: register to QUERY server
+  if(!global.QUERY) return;
+  var body = JSON.stringify(o);
+  var headers = {
+    'Content-Type': 'application/json',
+    'Content-Length': `${body.length}`
+  }
+  var req = http.request(`http://${global.QUERY}/${pname}`, {method: 'POST', headers});
+  req.end(body);
 }));
 app.get('/:name/export', (req, res) => {
   var {name} = req.params;
