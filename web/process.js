@@ -14,7 +14,6 @@ const path = require('path');
 
 const E = process.env;
 const REFS = /\/.*?\/fs/;
-const PORT = parseInt(E['PORT']||'8080');
 const ROOT = process.cwd()+'/_data/process';
 
 const app = express();
@@ -54,7 +53,7 @@ app.post('/', wrap(async (req, res) => {
   var pnew = Object.assign({}, config.read(dir), req.body, {name});
   pnew.vervion = Math.max(pnew.version, p? p.version+1:0);
   pnew.env['SERVICE'] = name;
-  pnew.env['DEVICE'] = '127.0.0.1:'+PORT;
+  pnew.env['DEVICE'] = '127.0.0.1:'+global.PORT;
   config.write(dir, pnew); res.json(pnew);
 }));
 app.post('/prune', wrap(async (req, res) => {
