@@ -1,6 +1,6 @@
 {
   "name": "@mycelium/device",
-  "version": "0.0.108",
+  "version": "0.0.109",
   "description": "Device support for small distributed IoT network.",
   "main": "index.js",
   "scripts": {

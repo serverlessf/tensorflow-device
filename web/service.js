@@ -161,7 +161,8 @@ app.post('/:name/run', wrap(async (req, res) => {
   res.json({id, name: pname});
   // NOTE: register to QUERY server
   if(!global.QUERY) return;
-  var body = JSON.stringify(o);
+  var body = Object.assign({address: o.env['ADDRESS']}, o);
+  var body = JSON.stringify(body);
   var headers = {
     'Content-Type': 'application/json',
     'Content-Length': `${body.length}`
