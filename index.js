@@ -1,5 +1,7 @@
-const http = require('http');
+const ip = require('ip');
 const web = require('./web');
+const http = require('http');
+
 
 
 const E = process.env;
@@ -12,5 +14,6 @@ server.on('clientError', (err, soc) => {
   soc.end('HTTP/1.1 400 Bad Request\r\n\r\n');
 });
 server.listen(global.PORT, () => {
-  console.log('DEVICE running on port '+global.PORT);
+  global.DEVICE = ip.address()+':'+global.PORT;
+  console.log('DEVICE running on '+global.DEVICE);
 });

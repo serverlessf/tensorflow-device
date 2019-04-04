@@ -1,6 +1,6 @@
 {
   "name": "@mycelium/device",
-  "version": "0.0.102",
+  "version": "0.0.103",
   "description": "Device support for small distributed IoT network.",
   "main": "index.js",
   "scripts": {
@@ -39,6 +39,7 @@
     "finalhandler": "^1.1.1",
     "find-free-port": "^2.0.0",
     "fs-extra": "^7.0.1",
+    "ip": "^1.1.5",
     "serve-index": "^1.9.1",
     "serve-static": "^1.13.2"
   }

@@ -64,7 +64,7 @@ app.post('/', wrap(async (req, res) => {
   var snew = Object.assign({}, config.read(dir), req.body, {name});
   snew.version = Math.max(snew.version, s? s.version+1:0);
   snew.env['SERVICE'] = name;
-  snew.env['DEVICE'] = '127.0.0.1:'+global.PORT;
+  snew.env['DEVICE'] = global.DEVICE;
   config.write(dir, snew);
   res.json(services[name] = snew);
 }));

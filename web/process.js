@@ -53,7 +53,7 @@ app.post('/', wrap(async (req, res) => {
   var pnew = Object.assign({}, config.read(dir), req.body, {name});
   pnew.vervion = Math.max(pnew.version, p? p.version+1:0);
   pnew.env['SERVICE'] = name;
-  pnew.env['DEVICE'] = '127.0.0.1:'+global.PORT;
+  pnew.env['DEVICE'] = global.DEVICE;
   config.write(dir, pnew); res.json(pnew);
 }));
 app.post('/prune', wrap(async (req, res) => {
