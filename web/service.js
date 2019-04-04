@@ -33,8 +33,10 @@ const wrap = (fn) => ((req, res, next) => (
 async function commandRun(o, pname) {
   var ppath = o.copyfs? path.join(PROOT, pname):o.path;
   if(o.copyfs) await fs.copy(o.path, ppath);
-  var workdir = `-w ${o.workdir}`, name = `--name ${pname}`;
   var freePorts = await findFreePort(1024, 65535, '127.0.0.1', o.ports.length);
+  o.env['PORT'] = o.ports.join();
+  o.env['ADDRESS'] = o.ports.map(p => global.IP+':'+p).join();
+  var workdir = `-w ${o.workdir}`, name = `--name ${pname}`;
   var ports = o.ports.reduce((str, port, i) => str+` -p ${freePorts[i]}:${port}`, '');
   var mounts = o.mounts.reduce((str, mount) => str+` --mount ${mount}`, '');
   var env = Object.keys(o.env).reduce((str, k) => str+` -e ${k}=${o.env[k]}`, '');

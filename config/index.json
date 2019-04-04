@@ -10,6 +10,7 @@
     "QUERY": "NOT_SPECIFIED",
     "SERVICE": "$service",
     "PROCESS": "$process",
+    "ADDRESS": "$address",
     "PORT": "$port"
   }
 }
