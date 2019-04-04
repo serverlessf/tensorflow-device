@@ -8,6 +8,7 @@ const E = process.env;
 global.IP = ip.address();
 global.PORT = E['PORT']||'8000';
 global.DEVICE = global.IP+':'+global.PORT;
+global.QUERY = E['QUERY']||'';
 
 
 
