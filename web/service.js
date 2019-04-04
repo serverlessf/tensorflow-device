@@ -160,15 +160,20 @@ app.post('/:name/run', wrap(async (req, res) => {
   if(o.copyfs) await fs.symlink(path.join(PROOT, pname), path.join(PROOT, id));
   res.json({id, name: pname});
   // NOTE: register to QUERY server
+  console.log('QUERY', global.QUERY);
   if(!global.QUERY) return;
+  var host = global.QUERY.split(':')[0];
+  var port = parseInt(global.QUERY.split(':')[1]);
+  var method = 'POST', path = '/'+pname;
   var body = Object.assign({address: o.env['ADDRESS']}, o);
   var body = JSON.stringify(body);
   var headers = {
     'Content-Type': 'application/json',
     'Content-Length': `${body.length}`
   }
-  var req = http.request(`http://${global.QUERY}/${pname}`, {method: 'POST', headers});
+  var req = http.request({host, port, method, path, headers});
   req.end(body);
+  console.log('registering to QUERY', global.QUERY);
 }));
 app.get('/:name/export', (req, res) => {
   var {name} = req.params;
