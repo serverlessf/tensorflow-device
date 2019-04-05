@@ -65,7 +65,7 @@ app.post('/', wrap(async (req, res) => {
   if(s && !update) return errServiceExists(res, name);
   await fetch({git, url, file}, ROOT, name);
   var dir = path.join(ROOT, name);
-  var snew = Object.assign({}, config.read(dir), req.body, {name});
+  var snew = config.defaults(Object.assign({}, config.read(dir), req.body, {name}));
   snew.version = Math.max(snew.version, s? s.version+1:0);
   snew.env['SERVICE'] = name;
   snew.env['DEVICE'] = global.DEVICE;

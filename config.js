@@ -15,8 +15,11 @@ const NOP = () => 0;
 
 function defaults(o) {
   ARRAYKEYS.forEach(k => { if(typeof o[k]==='string') o[k] = o[k].split(';'); });
+  console.log('config.defaults', o);
   o = Object.assign(DEFAULTS.get((o.engine||DEFAULTENGINE).replace(/\W/g, '_')), o);
+  console.log('config.defaults', o);
   o = Object.assign(DEFAULTS.get('index'), o);
+  console.log('config.defaults', o);
   // for(var k in o.env) o.env[k] = o.env[k].replace(/\$name/g, o.name);
   for(var k in o.env) o.env[k] = o.env[k].replace(/\$port/g, o.ports[0]);
   o.created = o.created||new Date();
