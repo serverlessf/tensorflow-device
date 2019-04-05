@@ -9,8 +9,8 @@ const needle = require('needle');
 const net = require('extra-net');
 const cp = require('extra-cp');
 const fs = require('fs-extra');
-const config = require('../config');
-const fetch = require('../fetch');
+const config = require('./config');
+const fetch = require('./fetch');
 const path = require('path');
 
 
@@ -55,9 +55,8 @@ async function processes(name) {
 app.get('/', (req, res) => res.json(services));
 app.post('/', wrap(async (req, res) => {
   var {name, git, url, update} = req.body;
-  var file = (req.files||{}).file, s = services[name];
+  var {file} = (req.files||{}), s = services[name];
   name = name||path.parse(git||url||file.name).name;
-  console.log(s, update);
   if(s && !update) return errServiceExists(res, name);
   await fetch({git, url, file}, ROOT, name);
   var dir = path.join(ROOT, name);
@@ -71,12 +70,13 @@ app.post('/', wrap(async (req, res) => {
 }));
 app.delete('/:name', wrap(async (req, res) => {
   var {name} = req.params;
+  var dir = path.join(ROOT, name);
   if(!services[name]) return errNoService(res, name);
-  var jobs = [fs.remove(path.join(ROOT, name))];
-  var cs = await docker.listContainers();
-  for(var c of cs.filter(c => c.Names[0].includes(name)))
-    jobs.push(docker.getContainer(c.Id).stop(req.body));
-  await Promise.all(jobs);
+  var _del = [fs.remove(dir), docker.getImage(name).remove(req.body)];
+  var cons = await processes(name);
+  for(var c of cons.filter(c => c.Names[0].includes(name)))
+    _del.push(docker.getContainer(c.Id).stop(req.body));
+  await Promise.all(_del);
   delete services[name];
   res.json(null);
 }));
@@ -87,8 +87,9 @@ app.get('/:name', (req, res) => {
 });
 app.post('/:name', (req, res) => {
   var {name} = req.params;
+  var dir = path.join(ROOT, name);
   if(!services[name]) return errNoService(res, name);
-  config.write(path.join(ROOT, name), Object.assign(services[name], req.body, {name}));
+  config.write(dir, Object.assign(services[name], req.body, {name}));
   res.json(services[name]);
 });
 app.get('/:name/processes', wrap(async (req, res) => {
@@ -97,10 +98,12 @@ app.get('/:name/processes', wrap(async (req, res) => {
 }));
 app.get('/:name/fs*', (req, res) => {
   console.log(req.ip, req.method, req.url, req.body);
+  var {name} = req.params;
   req.url = req.url.replace(REFS, '')||'/';
+  var dir = path.join(ROOT, name);
   var done = finalhandler(req, res);
-  var {name} = req.params, spath = path.join(ROOT, name);
-  var index = serveIndex(spath, {icons: true}), static = serveStatic(spath);
+  var index = serveIndex(dir, {icons: true});
+  var static = serveStatic(dir);
   static(req, res, (err) => err? done(err):index(req, res, done));
 });
 app.post('/:name/fs*', wrap(async (req, res) => {
@@ -110,6 +113,7 @@ app.post('/:name/fs*', wrap(async (req, res) => {
   await file.mv(abs);
   res.json(file.size);
 }));
+// TODO:
 app.post('/:name/run', wrap(async (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
@@ -120,13 +124,13 @@ app.post('/:name/run', wrap(async (req, res) => {
   var id = (stdout||stderr).trim();
   if(o.copyfs) await fs.symlink(path.join(PROOT, pname), path.join(PROOT, id));
   res.json({id, name: pname});
-  if(!global.QUERY) return;
+  if(!QUERY) return;
   var data = Object.assign({address: o.env['ADDRESS']}, o);
-  await needle('post', `http://${global.QUERY}/${pname}`, data, {json: true});
+  await needle('post', `http://${QUERY}/${pname}`, data, {json: true});
 }));
 app.get('/:name/export', (req, res) => {
   var {name} = req.params;
-  var dir = path.join(global.SROOT, name);
+  var dir = path.join(ROOT, name);
   res.writeHead(200, {'content-type': 'application/zip'});
   var archive = archiver('zip', {zlib: {level: 9}});
   archive.pipe(res);
@@ -134,8 +138,10 @@ app.get('/:name/export', (req, res) => {
   archive.finalize();
 });
 app.post('/:name/:fn', wrap(async (req, res) => {
-  var {name, fn} = req.params, options = req.body, ps = await processes(name);
-  res.json(await Promise.all(ps.map(p => docker.getContainer(p.Id)[fn](options))));
+  var {name, fn} = req.params;
+  var procs = await processes(name);
+  var _outs = procs.map(p => docker.getContainer(p.Id)[fn](req.body));
+  res.json(await Promise.all(_outs));
 }));
 fs.mkdirSync(ROOT, {recursive: true});
 config.readAll(ROOT, services);

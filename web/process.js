@@ -6,8 +6,8 @@ const express = require('express');
 Array = require('extra-array');
 const cp = require('extra-cp');
 const fs = require('fs-extra');
-const config = require('../config');
-const fetch = require('../fetch');
+const config = require('./config');
+const fetch = require('./fetch');
 const path = require('path');
 
 
