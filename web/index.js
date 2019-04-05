@@ -1,5 +1,4 @@
 const fileUpload = require('express-fileupload');
-const bodyParser = require('body-parser');
 const express = require('express');
 const webexec = require('./exec');
 const webos = require('./os');
@@ -17,8 +16,8 @@ const app = express();
 
 
 
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
+app.use(express.urlencoded({extended: true}));
+app.use(express.json());
 app.use(fileUpload());
 app.use((req, res, next) => {
   Object.assign(req.body, req.query);
@@ -33,11 +32,6 @@ app.use((err, req, res, next) => {
   console.error(err, err.stack)
   res.status(err.statusCode||500).send(err.json||err);
 })
-// app.use((req, res, next) => {
-//   var f = path.join(AROOT, req.url);
-//   if(!f.endsWith('.html') && !fs.existsSync(f)) return next();
-//   res.render(req.url, );
-// });
 app.use(express.static(ROOT+'/assets', {extensions: ['html']}));
 module.exports = app;
 
