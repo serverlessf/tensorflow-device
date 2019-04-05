@@ -10,8 +10,6 @@ const fs = require('fs');
 
 
 const ROOT = path.dirname(require.main.filename);
-const AROOT = path.join(ROOT, 'assets');
-const TEMPLATES = {};
 const app = express();
 
 
@@ -34,10 +32,3 @@ app.use((err, req, res, next) => {
 })
 app.use(express.static(ROOT+'/assets', {extensions: ['html']}));
 module.exports = app;
-
-
-
-for(var f of fs.readdirSync(AROOT)) {
-  if(!f.startsWith('_')) continue;
-  TEMPLATES[f] = fs.readFileSync(path.join(AROOT, f));
-}
