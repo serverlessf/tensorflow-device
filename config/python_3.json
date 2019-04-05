@@ -1,3 +1,0 @@
-{
-  "cmd": ["sh", "-c", "\"if [ ! -e setup.done ]; then if [ -e setup.py ]; then python setup.py; elif [ -e requirements.txt ]; then pip install -r requirements.txt --progress-bar off; fi; touch setup.done; fi; python main.py\""]
-}

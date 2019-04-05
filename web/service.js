@@ -67,6 +67,7 @@ app.post('/', wrap(async (req, res) => {
   snew.env['QUERY'] = global.QUERY;
   config.write(dir, snew);
   res.json(services[name] = snew);
+  docker.buildImage()
 }));
 app.delete('/:name', wrap(async (req, res) => {
   var {name} = req.params;

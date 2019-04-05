@@ -1,16 +1,6 @@
 {
   "version": 0,
-  "copyfs": true,
   "ports": [8000],
-  "engine": "python:3",
-  "mounts": ["type=bind,source=$path,target=/usr/src/app"],
-  "workdir": "/usr/src/app",
-  "env": {
-    "DEVICE": "127.0.0.1:$PORT",
-    "QUERY": "NOT_SPECIFIED",
-    "SERVICE": "$service",
-    "PROCESS": "$process",
-    "ADDRESS": "$address",
-    "PORT": "$port"
-  }
+  "engine": "python:3.7-slim",
+  "workdir": "/app"
 }

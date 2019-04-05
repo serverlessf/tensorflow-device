@@ -27,6 +27,23 @@ function defaults(o) {
   return o;
 }
 
+// python
+function dockerfile(o, out = '') {
+  out += `FROM ${o.engine}\n`;
+  out += `WORKDIR ${o.workdir}\n`;
+  out += `COPY . ${o.workdir}\n`;
+  out += `RUN python setup.py\n`;
+  out += `RUN pip install -r requirements.txt\n`;
+  o.ports.forEach(p => out += `EXPOSE ${p}\n`);
+  Object.keys(o.env).forEach(k => out += `ENV ${k} "${o.env[k]}"\n`);
+  out += 'CMD ['+o.cmd.map(p => `"${p}"`).join(', ')+']';
+  return out;
+}
+
+function build() {
+
+}
+
 async function write(dir, value) {
   var file = path.join(dir, CONFIGFILE);
   await fs.writeFile(file, JSON.stringify(value, null, 2));

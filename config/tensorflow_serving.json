@@ -1,7 +1,5 @@
 {
   "ports": [8500, 8501],
   "mounts": ["type=bind,source=$path,target=/models/model"],
-  "env": {
-    "MODEL_NAME": "model"
-  }
+  "env": {"MODEL_NAME": "model"}
 }
