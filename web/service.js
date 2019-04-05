@@ -1,4 +1,3 @@
-const findFreePort = require('find-free-port');
 const dockerNames = require('docker-names');
 const finalhandler = require('finalhandler');
 const serveStatic = require('serve-static');
@@ -6,6 +5,8 @@ const serveIndex = require('serve-index');
 const archiver = require('archiver');
 const Docker = require('dockerode');
 const express = require('express');
+const needle = require('needle');
+const net = require('extra-net');
 const cp = require('extra-cp');
 const fs = require('fs-extra');
 const config = require('../config');
@@ -34,7 +35,7 @@ const wrap = (fn) => ((req, res, next) => (
 async function commandRun(o, pname) {
   var ppath = o.copyfs? path.join(PROOT, pname):o.path;
   if(o.copyfs) await fs.copy(o.path, ppath);
-  var freePorts = await findFreePort(1024, 65535, '127.0.0.1', o.ports.length);
+  var freePorts = await Promise.all(o.ports.map(p => net.freePort()));
   o.env['QUERY'] = global.QUERY;
   o.env['DEVICE'] = global.ADDRESS;
   o.env['PORT'] = o.ports.join();
@@ -159,47 +160,11 @@ app.post('/:name/run', wrap(async (req, res) => {
   var id = (stdout||stderr).trim();
   if(o.copyfs) await fs.symlink(path.join(PROOT, pname), path.join(PROOT, id));
   res.json({id, name: pname});
-  // NOTE: register to QUERY server
-  console.log('QUERY', global.QUERY);
   if(!global.QUERY) return;
-  var hostname = global.QUERY.split(':')[0];
-  var port = parseInt(global.QUERY.split(':')[1]);
-  var method = 'POST', pth = '/'+pname;
-  var postData = Object.assign({address: o.env['ADDRESS']}, o, {
+  var data = Object.assign({address: o.env['ADDRESS']}, o, {
     ports: undefined, mounts: undefined, env: undefined, cmd: undefined
   });
-  var postData = JSON.stringify(postData);
-  console.log(postData);
-  const options = {
-    hostname,
-    port,
-    path: pth,
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(postData)
-    }
-  };
-  
-  const qreq = http.request(options, (res) => {
-    console.log(`STATUS: ${res.statusCode}`);
-    console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-    res.setEncoding('utf8');
-    res.on('data', (chunk) => {
-      console.log(`BODY: ${chunk}`);
-    });
-    res.on('end', () => {
-      console.log('No more data in response.');
-    });
-  });
-  
-  qreq.on('error', (e) => {
-    console.error(`problem with request: ${e.message}`);
-  });
-  
-  // write data to request body
-  qreq.write(postData);
-  qreq.end();
+  await needle('post', `http://${global.QUERY}/${pname}`, data, {json: true});
 }));
 app.get('/:name/export', (req, res) => {
   var {name} = req.params;

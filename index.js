@@ -1,11 +1,11 @@
-const ip = require('ip');
+const net = require('extra-net');
 const web = require('./web');
 const http = require('http');
 
 
 
 const E = process.env;
-global.IP = ip.address();
+global.IP = net.address().address;
 global.PORT = E['PORT']||'8000';
 global.DEVICE = global.IP+':'+global.PORT;
 global.QUERY = E['QUERY']||'';
