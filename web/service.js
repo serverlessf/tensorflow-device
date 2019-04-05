@@ -52,13 +52,9 @@ async function processes(name) {
   return ps.filter(p => p.Names[0].substring(1).replace(/\.[^\.]*/, '')===name);
 }
 
-app.get('/', (req, res) => {
-  res.json(services);
-});
+app.get('/', (req, res) => res.json(services));
 app.post('/', wrap(async (req, res) => {
   var {name, git, url, update} = req.body;
-  console.log(req.body);
-  console.log();
   var file = (req.files||{}).file, s = services[name];
   name = name||path.parse(git||url||file.name).name;
   console.log(s, update);
@@ -99,41 +95,6 @@ app.get('/:name/processes', wrap(async (req, res) => {
   var {name} = req.params;
   res.json(await processes(name));
 }));
-app.post('/:name/start', wrap(async (req, res) => {
-  var {name} = req.params, options = req.body, ps = await processes(name);
-  var prs = ps.map(p => docker.getContainer(p.Id).start(options));
-  res.json(await Promise.all(prs));
-}));
-app.post('/:name/stop', wrap(async (req, res) => {
-  var {name} = req.params, options = req.body, ps = await processes(name);
-  var prs = ps.map(p => docker.getContainer(p.Id).stop(options));
-  res.json(await Promise.all(prs));
-}));
-app.post('/:name/kill', wrap(async (req, res) => {
-  var {name} = req.params, options = req.body, ps = await processes(name);
-  var prs = ps.map(p => docker.getContainer(p.Id).kill(options));
-  res.json(await Promise.all(prs));
-}));
-app.post('/:name/restart', wrap(async (req, res) => {
-  var {name} = req.params, options = req.body, ps = await processes(name);
-  var prs = ps.map(p => docker.getContainer(p.Id).restart(options));
-  res.json(await Promise.all(prs));
-}));
-app.post('/:name/pause', wrap(async (req, res) => {
-  var {name} = req.params, options = req.body, ps = await processes(name);
-  var prs = ps.map(p => docker.getContainer(p.Id).pause(options));
-  res.json(await Promise.all(prs));
-}));
-app.post('/:name/unpause', wrap(async (req, res) => {
-  var {name} = req.params, options = req.body, ps = await processes(name);
-  var prs = ps.map(p => docker.getContainer(p.Id).unpause(options));
-  res.json(await Promise.all(prs));
-}));
-app.post('/:name/remove', wrap(async (req, res) => {
-  var {name} = req.params, options = req.body, ps = await processes(name);
-  var prs = ps.map(p => docker.getContainer(p.Id).remove(options));
-  res.json(await Promise.all(prs));
-}));
 app.get('/:name/fs*', (req, res) => {
   console.log(req.ip, req.method, req.url, req.body);
   req.url = req.url.replace(REFS, '')||'/';
@@ -160,20 +121,22 @@ app.post('/:name/run', wrap(async (req, res) => {
   if(o.copyfs) await fs.symlink(path.join(PROOT, pname), path.join(PROOT, id));
   res.json({id, name: pname});
   if(!global.QUERY) return;
-  var data = Object.assign({address: o.env['ADDRESS']}, o, {
-    ports: undefined, mounts: undefined, env: undefined, cmd: undefined
-  });
+  var data = Object.assign({address: o.env['ADDRESS']}, o);
   await needle('post', `http://${global.QUERY}/${pname}`, data, {json: true});
 }));
 app.get('/:name/export', (req, res) => {
   var {name} = req.params;
-  var dir = path.join(ROOT, name);
+  var dir = path.join(global.SROOT, name);
   res.writeHead(200, {'content-type': 'application/zip'});
   var archive = archiver('zip', {zlib: {level: 9}});
   archive.pipe(res);
   archive.directory(dir+'/', false);
   archive.finalize();
 });
+app.post('/:name/:fn', wrap(async (req, res) => {
+  var {name, fn} = req.params, options = req.body, ps = await processes(name);
+  res.json(await Promise.all(ps.map(p => docker.getContainer(p.Id)[fn](options))));
+}));
 fs.mkdirSync(ROOT, {recursive: true});
 config.readAll(ROOT, services);
 module.exports = app;

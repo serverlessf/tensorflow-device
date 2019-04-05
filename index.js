@@ -1,6 +1,7 @@
 const net = require('extra-net');
 const web = require('./web');
 const http = require('http');
+const path = require('path');
 
 
 
@@ -9,7 +10,6 @@ global.IP = net.address().address;
 global.PORT = E['PORT']||'8000';
 global.DEVICE = global.IP+':'+global.PORT;
 global.QUERY = E['QUERY']||'';
-
 
 
 const server = http.createServer(web);
