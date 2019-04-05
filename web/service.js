@@ -36,7 +36,6 @@ async function commandRun(o, pname) {
   var ppath = o.copyfs? path.join(PROOT, pname):o.path;
   if(o.copyfs) await fs.copy(o.path, ppath);
   var freePorts = await Promise.all(o.ports.map(p => net.freePort()));
-  o.env['QUERY'] = global.QUERY;
   o.env['DEVICE'] = global.ADDRESS;
   o.env['PORT'] = o.ports.join();
   o.env['ADDRESS'] = freePorts.map(p => global.IP+':'+p).join();
@@ -71,6 +70,7 @@ app.post('/', wrap(async (req, res) => {
   snew.version = Math.max(snew.version, s? s.version+1:0);
   snew.env['SERVICE'] = name;
   snew.env['DEVICE'] = global.DEVICE;
+  snew.env['QUERY'] = global.QUERY;
   config.write(dir, snew);
   res.json(services[name] = snew);
 }));
