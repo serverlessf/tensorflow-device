@@ -12,16 +12,12 @@ const path = require('path');
 
 
 
-const E = process.env;
 const REFS = /\/.*?\/fs/;
 const ROOT = process.cwd()+'/_data/process';
 
 const app = express();
 const docker = new Docker();
-
-const wrap = (fn) => ((req, res, next) => (
-  fn(req, res, next).then(null, next)
-));
+const wrap = (fn) => ((req, res, next) => fn(req, res, next).then(null, next));
 
 
 
