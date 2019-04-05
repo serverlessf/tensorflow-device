@@ -29,6 +29,7 @@ function onSubmit(o) {
   var data = new FormData($form);
   data.set('name', $form.name.value);
   data.set('update', o.update||false);
+  if(!$form.engine.value) data.delete('engine');
   console.log('onSubmit()', data);
   var pre = o.update? 'Updated':'Created';
   var type = o.service!=null? 'service':'process';
