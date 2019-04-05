@@ -12,7 +12,6 @@ const fs = require('fs-extra');
 const config = require('../config');
 const fetch = require('../fetch');
 const path = require('path');
-const http = require('http');
 
 
 
