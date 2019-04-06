@@ -1,5 +1,5 @@
 const fileUpload = require('express-fileupload');
-const express = require('express');
+const express = require('extra-express');
 const webexec = require('./exec');
 const webos = require('./os');
 const webprocess = require('./process');

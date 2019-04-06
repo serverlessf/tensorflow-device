@@ -4,7 +4,7 @@ const serveStatic = require('serve-static');
 const serveIndex = require('serve-index');
 const archiver = require('archiver');
 const Docker = require('dockerode');
-const express = require('express');
+const express = require('extra-express');
 const needle = require('needle');
 const net = require('extra-net');
 const cp = require('extra-cp');
@@ -25,7 +25,6 @@ const services = {};
 
 const errNoService = (res, name) => res.status(404).json({message: 'Cant find service '+name});
 const errServiceExists = (res, name) => res.status(405).json({message: 'Service '+name+' already exists'});
-const wrap = (fn) => ((req, res, next) => fn(req, res, next).then(null, next));
 
 
 
@@ -35,7 +34,7 @@ async function processes(name) {
 }
 
 app.get('/', (req, res) => res.json(services));
-app.post('/', wrap(async (req, res) => {
+app.post('/', express.async(async (req, res) => {
   var {name, git, url, update} = req.body;
   var {file} = req.files||{}, s = services[name];
   name = name||path.parse(git||url||file.name).name;
@@ -51,7 +50,7 @@ app.post('/', wrap(async (req, res) => {
   console.log(services);
   res.json(s);
 }));
-app.delete('/:name', wrap(async (req, res) => {
+app.delete('/:name', express.async(async (req, res) => {
   var {name} = req.params;
   var dir = path.join(ROOT, name);
   if(!services[name]) return errNoService(res, name);
@@ -75,7 +74,7 @@ app.post('/:name', (req, res) => {
   config.write(dir, Object.assign(services[name], req.body, {name}));
   res.json(services[name]);
 });
-app.get('/:name/processes', wrap(async (req, res) => {
+app.get('/:name/processes', express.async(async (req, res) => {
   var {name} = req.params;
   res.json(await processes(name));
 }));
@@ -89,14 +88,14 @@ app.get('/:name/fs*', (req, res) => {
   var static = serveStatic(dir);
   static(req, res, (err) => err? done(err):index(req, res, done));
 });
-app.post('/:name/fs*', wrap(async (req, res) => {
+app.post('/:name/fs*', express.async(async (req, res) => {
   var {name} = req.params, {file} = req.files;
   var rel = req.url.replace(REFS, '')||'/';
   var abs = path.join(ROOT, name, rel);
   await file.mv(abs);
   res.json(file.size);
 }));
-app.post('/:name/run', wrap(async (req, res) => {
+app.post('/:name/run', express.async(async (req, res) => {
   var {name} = req.params;
   if(!services[name]) return errNoService(res, name);
   var pname = name+'.'+dockerNames.getRandomName();
@@ -116,7 +115,7 @@ app.get('/:name/export', (req, res) => {
   archive.directory(dir+'/', false);
   archive.finalize();
 });
-app.post('/:name/:fn', wrap(async (req, res) => {
+app.post('/:name/:fn', express.async(async (req, res) => {
   var {name, fn} = req.params;
   var procs = await processes(name);
   var _outs = procs.map(p => docker.getContainer(p.Id)[fn](req.body));
