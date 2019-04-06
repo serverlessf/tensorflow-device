@@ -6,6 +6,8 @@ const fs = require('fs');
 
 const E = process.env;
 const ROOT = path.dirname(require.main.filename);
+const SROOT = path.join(ROOT, '_data', 'service');
+const PROOT = path.join(ROOT, '_data', 'process');
 const PORT = E['PORT']||'8000';
 const IP = net.address().address;
 const ADDRESS = IP+':'+PORT;
@@ -21,8 +23,9 @@ const DEFAULTS = new Map();
 
 function defaultEnv(o, portMap=null) {
   var env = o.env;
+  o.address = portMap? portMap.map(p => `${IP}:${p}`).join():'';
   env['PORT'] = o.ports.join();
-  env['ADDRESS'] = portMap? portMap.map(p => `${IP}:${p}`).join():'';
+  env['ADDRESS'] = o.address;
   env['DEVICE'] = DEVICE;
   env['QUERY'] = QUERY;
   env['SERVICE'] = o.name;
@@ -56,10 +59,10 @@ async function write(dir, value) {
   return value;
 }
 
-async function read(dir) {
+async function read(dir, value) {
   var file = path.join(dir, CONFIGFILE);
   var o = fs.existsSync(file)? JSON.parse(await fs.readFile(file, 'utf8')):{};
-  return Object.assign(o, {path: dir});
+  return defaults(Object.assign(o, value));
 }
 
 async function prepare(dir, value) {
@@ -69,10 +72,10 @@ async function prepare(dir, value) {
   return value;
 }
 
-async function run(o) {
+async function run(o, name) {
   var portMap = await Promise.all(o.ports.map(p => net.freePort()));
   defaultEnv(o, portMap);
-  var workdir = `-w ${o.workdir}`, name = `--name ${pname}`;
+  var workdir = `-w ${o.workdir}`, name = `--name ${name}`;
   var ports = o.ports.reduce((str, port, i) => str+` -p ${portMap[i]}:${port}`, '');
   var mounts = o.mounts.reduce((str, mount) => str+` --mount ${mount}`, '');
   var env = Object.keys(o.env).reduce((str, k) => str+` -e ${k}=${o.env[k]}`, '');
@@ -80,6 +83,8 @@ async function run(o) {
   return `docker run -d ${workdir} ${name} ${ports} ${mounts} ${env} -it ${image} ${cmd}`;
 }
 exports.ROOT = ROOT;
+exports.SROOT = SROOT;
+exports.PROOT = PROOT;
 exports.PORT = PORT;
 exports.IP = IP;
 exports.ADDRESS = ADDRESS;

@@ -13,7 +13,7 @@ const path = require('path');
 
 
 const REFS = /\/.*?\/fs/;
-const ROOT = process.cwd()+'/_data/process';
+const ROOT = config.PROOT;
 
 const app = express();
 const docker = new Docker();
@@ -40,17 +40,13 @@ app.get('/', wrap(async (req, res) => {
   res.json(await docker.listContainers(options));
 }));
 app.post('/', wrap(async (req, res) => {
-  var {id, name, git, url} = req.body; name = name||id;
-  var file = (req.files||{}).file;
-  name = name||path.parse(git||url||file.name).name;
-  await fetch({git, url, file}, ROOT, name);
+  var {id, name, git, url} = req.body;
+  var {file} = req.files||{};
+  name = name||id||path.parse(git||url||file.name).name;
   var dir = path.join(ROOT, name);
-  var p = config.read(dir);
-  var pnew = Object.assign({}, config.read(dir), req.body, {name});
-  pnew.vervion = Math.max(pnew.version, p? p.version+1:0);
-  pnew.env['SERVICE'] = name;
-  pnew.env['DEVICE'] = global.DEVICE;
-  config.write(dir, pnew); res.json(pnew);
+  await fetch(dir, {git, url, file});
+  var p = await config.read(dir, req.body);
+  res.json(await config.write(dir, p));
 }));
 app.post('/prune', wrap(async (req, res) => {
   var options = req.body;
