@@ -73,13 +73,13 @@ async function request(o) {
     m('td', Object.keys(pb).map(k => m('tag', infoPortBinding(pb, k)))),
     m('td', `${rp.Name} (max: ${rp.MaximumRetryCount})`),
   ]));
-  m.render($mounts, p.Mounts.map(v => m('tr', [
+  m.render($mounts, (p.Mounts||[]).map(v => m('tr', [
     m('td', v.Type), m('td', v.Source), m('td', v.Destination),
   ])));
-  m.render($env, c.Env.map(v => m('tr', [
+  m.render($env, (c.Env||[]).map(v => m('tr', [
     m('td', v.split('=')[0]), m('td', v.split('=')[1]),
   ])));
-  m.render($cmd, c.Cmd.map(v => m('tr', m('td',
+  m.render($cmd, (c.Cmd||[]).map(v => m('tr', m('td',
     m('pre', v.replace(/;\s*/g, ';\n')
   )))));
 }

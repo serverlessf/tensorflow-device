@@ -42,10 +42,13 @@ app.post('/', wrap(async (req, res) => {
   if(s && !update) return errServiceExists(res, name);
   var dir = path.join(ROOT, name);
   await fetch(dir, {git, url, file});
-  var snew = config.read(dir, Object.assign(req.body, {name}));
+  var snew = await config.read(dir, Object.assign(req.body, {name}));
   snew.version = Math.max(snew.version, s? s.version+1:0);
+  console.log({snew, dir});
   services[name] = s = await config.prepare(dir, snew);
-  console.log(await cp.exec(`docker build --tag=${name} .`));
+  var {stdout} = await cp.exec(`docker build --tag=${name} .`, {cwd: dir});
+  console.log(stdout);
+  console.log(services);
   res.json(s);
 }));
 app.delete('/:name', wrap(async (req, res) => {
@@ -98,7 +101,7 @@ app.post('/:name/run', wrap(async (req, res) => {
   if(!services[name]) return errNoService(res, name);
   var pname = name+'.'+dockerNames.getRandomName();
   var o = Object.assign(req.body, services[name]);
-  var cmd = config.run(o, pname);
+  var cmd = await config.run(o, pname);
   var {stdout, stderr} = await cp.exec(cmd);
   var id = (stdout||stderr).trim();
   if(QUERY) await needle('post', `http://${QUERY}/${pname}`, o, {json: true});

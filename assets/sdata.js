@@ -77,13 +77,13 @@ async function request(o) {
     m('td', s.ports.map(v => m('tag', v))),
     m('td', `${s.copyfs}`),
   ]));
-  m.render($mounts, s.mounts.map(infoMount).map(v => m('tr', [
+  m.render($mounts, (s.mounts||[]).map(infoMount).map(v => m('tr', [
     m('td', v.type), m('td', v.source), m('td', v.target),
   ])));
-  m.render($env, Object.keys(s.env).map(k => m('tr', [
+  m.render($env, Object.keys(s.env||{}).map(k => m('tr', [
     m('td', k), m('td', s.env[k]),
   ])));
-  m.render($cmd, s.cmd.map(v => m('tr', m('td',
+  m.render($cmd, (s.cmd||[]).map(v => m('tr', m('td',
     m('pre', v.replace(/;\s*/g, ';\n')
   )))));
 }

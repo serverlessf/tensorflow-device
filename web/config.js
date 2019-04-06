@@ -1,6 +1,6 @@
 const net = require('extra-net');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 
 
 
@@ -22,7 +22,7 @@ const DEFAULTS = new Map();
 
 
 function defaultEnv(o, portMap=null) {
-  var env = o.env;
+  var env = o.env = o.env||{};
   o.address = portMap? portMap.map(p => `${IP}:${p}`).join():'';
   env['PORT'] = o.ports.join();
   env['ADDRESS'] = o.address;
@@ -35,7 +35,7 @@ function defaultEnv(o, portMap=null) {
 
 function defaults(o) {
   ARRAYKEYS.forEach(k => { if(typeof o[k]==='string') o[k] = o[k].split(';'); });
-  o = Object.assign(DEFAULTS.get((o.engine||DEFAULTENGINE).replace(/\W/g, '_')), o);
+  o = Object.assign(DEFAULTS.get((o.engine||DEFAULTENGINE).replace(/\W/g, '_').replace(/:.*/, '')), o);
   o = Object.assign(DEFAULTS.get('index'), o);
   o.created = o.created||new Date();
   return defaultEnv(o);
@@ -45,10 +45,10 @@ function dockerfile(o, out = '') {
   out += `FROM ${o.engine}\n`;
   out += `WORKDIR ${o.workdir}\n`;
   out += `COPY . ${o.workdir}\n`;
-  o.run.forEach(r => out += `RUN ${r}\n`);
-  o.ports.forEach(p => out += `EXPOSE ${p}\n`);
-  Object.keys(o.env).forEach(k => out += `ENV ${k} "${o.env[k]}"\n`);
-  out += 'CMD ['+o.cmd.map(p => `"${p}"`).join(', ')+']';
+  if(o.run) o.run.forEach(r => out += `RUN ${r}\n`);
+  if(o.ports) o.ports.forEach(p => out += `EXPOSE ${p}\n`);
+  if(o.env) Object.keys(o.env).forEach(k => out += `ENV ${k} "${o.env[k]}"\n`);
+  if(o.cmd) out += 'CMD ['+o.cmd.map(p => `"${p}"`).join(', ')+']\n';
   return out;
 }
 
@@ -76,10 +76,10 @@ async function run(o, name) {
   var portMap = await Promise.all(o.ports.map(p => net.freePort()));
   defaultEnv(o, portMap);
   var workdir = `-w ${o.workdir}`, name = `--name ${name}`;
-  var ports = o.ports.reduce((str, port, i) => str+` -p ${portMap[i]}:${port}`, '');
-  var mounts = o.mounts.reduce((str, mount) => str+` --mount ${mount}`, '');
-  var env = Object.keys(o.env).reduce((str, k) => str+` -e ${k}=${o.env[k]}`, '');
-  var image = o.engine, cmd = o.cmd.map(c => /\s/.test(c)? `"${c}"`:c).join(' ');
+  var ports = o.ports? o.ports.reduce((str, port, i) => str+` -p ${portMap[i]}:${port}`, ''):'';
+  var mounts = o.mounts? o.mounts.reduce((str, mount) => str+` --mount ${mount}`, ''):'';
+  var env = o.env? Object.keys(o.env).reduce((str, k) => str+` -e ${k}=${o.env[k]}`, ''):'';
+  var image = o.engine, cmd = o.cmd? o.cmd.map(c => /\s/.test(c)? `"${c}"`:c).join(' '):'';
   return `docker run -d ${workdir} ${name} ${ports} ${mounts} ${env} -it ${image} ${cmd}`;
 }
 exports.ROOT = ROOT;
