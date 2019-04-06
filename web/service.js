@@ -45,7 +45,7 @@ app.post('/', wrap(async (req, res) => {
   var snew = config.read(dir, Object.assign(req.body, {name}));
   snew.version = Math.max(snew.version, s? s.version+1:0);
   services[name] = s = await config.prepare(dir, snew);
-  await cp.exec(`docker build --tag=${name} .`);
+  console.log(await cp.exec(`docker build --tag=${name} .`));
   res.json(s);
 }));
 app.delete('/:name', wrap(async (req, res) => {
@@ -120,5 +120,6 @@ app.post('/:name/:fn', wrap(async (req, res) => {
   res.json(await Promise.all(_outs));
 }));
 fs.mkdirSync(ROOT, {recursive: true});
-config.readAll(ROOT, services);
+for(var name of fs.readdirSync(ROOT))
+  config.read(path.join(ROOT, name)).then(o => services[name] = o);
 module.exports = app;
