@@ -1,6 +1,6 @@
 const net = require('extra-net');
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('extra-fs');
 
 
 
