@@ -79,7 +79,7 @@ async function run(o, name) {
   var ports = o.ports? o.ports.reduce((str, port, i) => str+` -p ${portMap[i]}:${port}`, ''):'';
   var mounts = o.mounts? o.mounts.reduce((str, mount) => str+` --mount ${mount}`, ''):'';
   var env = o.env? Object.keys(o.env).reduce((str, k) => str+` -e ${k}=${o.env[k]}`, ''):'';
-  var image = o.engine, cmd = o.cmd? o.cmd.map(c => /\s/.test(c)? `"${c}"`:c).join(' '):'';
+  var image = o.name, cmd = o.cmd? o.cmd.map(c => /\s/.test(c)? `"${c}"`:c).join(' '):'';
   return `docker run -d ${workdir} ${name} ${ports} ${mounts} ${env} -it ${image} ${cmd}`;
 }
 exports.ROOT = ROOT;
