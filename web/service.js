@@ -31,21 +31,19 @@ async function processes(name) {
   return ps.filter(p => p.Names[0].substring(1).replace(/\.[^\.]*/, '')===name);
 }
 
+
 app.get('/', (req, res) => res.json(services));
 app.post('/', express.async(async (req, res) => {
-  var {name, git, url, update} = req.body;
-  var {file} = req.files||{}, s = services[name];
-  name = name||path.parse(git||url||file.name).name;
+  var {name, gitUrl, fileUrl, update} = req.body;
+  var {fileUpload} = req.files||{}, s = services[name];
+  name = name||path.parse(gitUrl||fileUrl||fileUpload.name).name;
   if(s && !update) return errServiceExists(res, name);
   var dir = path.join(ROOT, name);
-  await decompress(dir, {git, url, file});
+  await decompress({gitUrl, fileUrl, fileUpload}, dir);
   var snew = await config.read(dir, Object.assign(req.body, {name}));
   snew.version = Math.max(snew.version, s? s.version+1:0);
-  console.log({snew, dir});
   services[name] = s = await config.prepare(dir, snew);
-  var {stdout} = await cp.exec(`docker build --tag=${name} .`, {cwd: dir});
-  console.log(stdout);
-  console.log(services);
+  await cp.exec(`docker build --tag=${name} .`, {cwd: dir});
   res.json(s);
 }));
 app.delete('/:name', express.async(async (req, res) => {
@@ -53,9 +51,9 @@ app.delete('/:name', express.async(async (req, res) => {
   var dir = path.join(ROOT, name);
   if(!services[name]) return errNoService(res, name);
   var _del = [fs.remove(dir), docker.getImage(name).remove(req.body)];
-  var cons = await processes(name);
-  for(var c of cons.filter(c => c.Names[0].includes(name)))
-    _del.push(docker.getContainer(c.Id).stop(req.body));
+  var procs = await processes(name);
+  for(var p of procs)
+    _del.push(docker.getContainer(p.Id).stop(req.body));
   await Promise.all(_del);
   delete services[name];
   res.json(null);

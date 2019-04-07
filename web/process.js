@@ -39,11 +39,12 @@ app.get('/', express.async(async (req, res) => {
   res.json(await docker.listContainers(options));
 }));
 app.post('/', express.async(async (req, res) => {
-  var {id, name, git, url} = req.body;
-  var {file} = req.files||{};
-  name = name||id||path.parse(git||url||file.name).name;
+  var {id, name, gitUrl, fileUrl} = req.body;
+  var {fileUpload} = req.files||{};
+  var fileName = path.parse(gitUrl||fileUrl||fileUpload.name).name
+  name = id||name||fileName;
   var dir = path.join(ROOT, name);
-  await decompress(dir, {git, url, file});
+  await decompress({gitUrl, fileUrl, fileUpload}, dir);
   var p = await config.read(dir, req.body);
   res.json(await config.write(dir, p));
 }));
@@ -84,7 +85,7 @@ app.post('/:id/fs*', express.async(async (req, res) => {
 }));
 app.delete('/:id/logs', express.async(async (req, res) => {
   var {id} = req.params, options = req.body;
-  var cmd = `sudo sh -c "truncate -s 0 /var/lib/docker/containers/*/*-json.log"`;
+  var cmd = `sudo "truncate -s 0 /var/lib/docker/containers/*/*-json.log"`;
   var opts = commandOptions(options, [], ['cmd'])
   res.json(await cp.exec(`docker exec ${opts} ${id} ${cmd}`));
 }));
