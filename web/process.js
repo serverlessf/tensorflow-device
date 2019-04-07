@@ -7,7 +7,7 @@ Array = require('extra-array');
 const cp = require('extra-cp');
 const fs = require('extra-fs');
 const config = require('./config');
-const fetch = require('./fetch');
+const decompress = require('extra-decompress');
 const path = require('path');
 
 
@@ -43,7 +43,7 @@ app.post('/', express.async(async (req, res) => {
   var {file} = req.files||{};
   name = name||id||path.parse(git||url||file.name).name;
   var dir = path.join(ROOT, name);
-  await fetch(dir, {git, url, file});
+  await decompress(dir, {git, url, file});
   var p = await config.read(dir, req.body);
   res.json(await config.write(dir, p));
 }));

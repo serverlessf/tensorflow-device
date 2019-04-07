@@ -10,7 +10,7 @@ const net = require('extra-net');
 const cp = require('extra-cp');
 const fs = require('extra-fs');
 const config = require('./config');
-const fetch = require('./fetch');
+const decompress = require('extra-decompress');
 const path = require('path');
 
 
@@ -40,7 +40,7 @@ app.post('/', express.async(async (req, res) => {
   name = name||path.parse(git||url||file.name).name;
   if(s && !update) return errServiceExists(res, name);
   var dir = path.join(ROOT, name);
-  await fetch(dir, {git, url, file});
+  await decompress(dir, {git, url, file});
   var snew = await config.read(dir, Object.assign(req.body, {name}));
   snew.version = Math.max(snew.version, s? s.version+1:0);
   console.log({snew, dir});
