@@ -2,9 +2,10 @@ h1, h2 {
   text-align: center;
 }
 
-body, form * {
+body, form *, [btn] {
   font-family: 'Baloo Chettan', cursive;
 }
+
 body.service #aservice {
   color: blueviolet;
   border-color: blueviolet;
