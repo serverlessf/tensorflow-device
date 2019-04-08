@@ -50,11 +50,11 @@ function searchParse(search) {
 function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
-  $access.setAttribute('href', `/service/${o.service}/fs/`);
-  m.request({method: 'GET', url: '/service/'+o.service}).then((p) => {
-    var q = `service=${o.service}&engine=${o.engine}&update=1`;
-    $access.setAttribute('href', `/service/${o.service}/fs/`);
-    $download.setAttribute('href', `/service/${o.service}/export`);
+  $access.setAttribute('href', `/image/${o.image}/fs/`);
+  m.request({method: 'GET', url: '/image/'+o.image}).then((p) => {
+    var q = `image=${o.image}&from=${o.from}&update=1`;
+    $access.setAttribute('href', `/image/${o.image}/fs/`);
+    $download.setAttribute('href', `/image/${o.image}/export`);
     $upload.setAttribute('href', `/upload.html?${q}`);
   });
   return o;
@@ -62,12 +62,12 @@ function onReady() {
 
 async function request(o) {
   console.log('request()', o);
-  var name = o.service;
-  var sp = m.request({method: 'GET', url: '/service/'+name});
-  var psp = m.request({method: 'GET', url: '/process?all=1'});
+  var name = o.image;
+  var sp = m.request({method: 'GET', url: '/image/'+name});
+  var psp = m.request({method: 'GET', url: '/container?all=1'});
   var [s, ps] = await Promise.all([sp, psp]);
   var {total, created, running, exited} = stateCount(name, ps);
-  m.render($h2, [s.name, m('div', m('small', s.engine))]);
+  m.render($h2, [s.name, m('div', m('small', s.from))]);
   m.render($state, m('tr', [
     m('td', moment(s.created).fromNow()), m('td', running),
     m('td', exited), m('td', created), m('td', total),
@@ -89,15 +89,15 @@ async function request(o) {
 }
 
 function onRun(o) {
-  m.request({method: 'POST', url: `/service/${o.service}/run`}).then((data) => {
-    iziToast.success({message: `Ran service ${o.service} as ${data.name}`});
+  m.request({method: 'POST', url: `/image/${o.image}/run`}).then((data) => {
+    iziToast.success({message: `Ran image ${o.image} as ${data.name}`});
   }, (err) => iziToast.error({message: err.message}));
   return false;
 }
 
 function onButton(o, fn, pre, method='POST') {
-  m.request({method, url: `/service/${o.service}/${fn}`}).then((data) => {
-    iziToast.success({message: `${pre} service ${o.service}`});
+  m.request({method, url: `/image/${o.image}/${fn}`}).then((data) => {
+    iziToast.success({message: `${pre} image ${o.image}`});
   }, (err) => iziToast.error({message: err.message}));
   return false;
 }

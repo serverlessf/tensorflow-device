@@ -17,7 +17,7 @@ function searchParse(search) {
 function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
-  m.render($h2, [o.process, m('div', m('small', o.engine||''))]);
+  m.render($h2, [o.container, m('div', m('small', o.engine||''))]);
   return Object.assign(o, {stdout: 0, stderr: 0, p:0});;
 }
 
@@ -34,7 +34,7 @@ function render(err, stdout, stderr, o) {
 
 function request(o) {
   console.log('request()', o);
-  var url = `/process/${o.process}/logs`;
+  var url = `/container/${o.container}/logs`;
   var pout = m.request({method: 'GET', url: url+'?stdout=1'});
   var perr = m.request({method: 'GET', url: url+'?stderr=1'});
   Promise.all([pout, perr]).then(
@@ -43,8 +43,8 @@ function request(o) {
 }
 
 function onClear(o) {
-  m.request({method: 'DELETE', url: `/process/${o.process}/logs`}).then((data) => {
-    iziToast.success({message: `Cleared logs of process ${o.process}`});
+  m.request({method: 'DELETE', url: `/container/${o.container}/logs`}).then((data) => {
+    iziToast.success({message: `Cleared logs of container ${o.container}`});
   }, (err) => iziToast.error({message: JSON.parse(err.message).stderr}));
   return false;
 }

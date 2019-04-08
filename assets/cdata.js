@@ -43,21 +43,21 @@ function searchParse(search) {
 function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
-  m.request({method: 'GET', url: '/process/'+o.process}).then((p) => {
-    var q = `process=${o.process}&engine=${p.Config.Image}&update=1`;
-    $top.setAttribute('href', `/ptop.html?${q}`);
-    $logs.setAttribute('href', `/plogs.html?${q}`);
+  m.request({method: 'GET', url: '/container/'+o.container}).then((p) => {
+    var q = `container=${o.container}&from=${p.Config.Image}&update=1`;
+    $top.setAttribute('href', `/ctop.html?${q}`);
+    $logs.setAttribute('href', `/clogs.html?${q}`);
     $upload.setAttribute('href', `/upload.html?${q}`);
-    $access.setAttribute('href', `/process/${o.process}/fs/`);
-    $download.setAttribute('href', `/process/${o.process}/export`);
+    $access.setAttribute('href', `/container/${o.container}/fs/`);
+    $download.setAttribute('href', `/container/${o.container}/export`);
   });
   return o;
 }
 
 async function request(o) {
   console.log('request()', o);
-  var id = o.process;
-  var p = await m.request({method: 'GET', url: '/process/'+id});
+  var id = o.container;
+  var p = await m.request({method: 'GET', url: '/container/'+id});
   var s = p.State, hc = p.HostConfig, c = p.Config;
   var rp = hc.RestartPolicy, pb = hc.PortBindings;
   m.render($h2, [p.Name.substring(1), m('div', m('small', c.Image))]);
@@ -85,8 +85,8 @@ async function request(o) {
 }
 
 function onButton(fn, pre, o) {
-  m.request({method: 'POST', url: `/process/${o.process}/${fn}`}).then((data) => {
-    iziToast.success({message: `${pre} process ${o.process}`});
+  m.request({method: 'POST', url: `/container/${o.container}/${fn}`}).then((data) => {
+    iziToast.success({message: `${pre} container ${o.container}`});
   }, (err) => iziToast.error({message: err.message}));
   return false;
 }

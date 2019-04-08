@@ -16,14 +16,14 @@ function onReady() {
 }
 
 async function request(o) {
-  var ssp = m.request({method: 'GET', url: '/service'});
-  var csp = m.request({method: 'GET', url: '/process'});
+  var ssp = m.request({method: 'GET', url: '/image'});
+  var csp = m.request({method: 'GET', url: '/container'});
   var [ss, cs] = await Promise.all([ssp, csp]);
-  for(var k in ss) ss[k].processes = 0;
-  cs.forEach(c => ss[c.Names[0].substring(1).replace(/\..*$/, '')].processes++);
+  for(var k in ss) ss[k].containers = 0;
+  cs.forEach(c => ss[c.Names[0].substring(1).replace(/\..*$/, '')].containers++);
   m.render($table, Object.values(ss).map(s => m('tr', [
-    m('td', m('a', {href: `/sdata.html?service=${s.name}&engine=${s.engine}`}, s.name)),
-    m('td', s.version), m('td', s.engine), m('td', s.processes),
+    m('td', m('a', {href: `/idata.html?image=${s.name}&from=${s.from}`}, s.name)),
+    m('td', s.version), m('td', s.from), m('td', s.containers),
     m('td', s.ports.map(p => m('tag', p)))
   ])));
 }

@@ -1,7 +1,7 @@
 const $h2 = document.querySelector('h2');
 const $form = document.querySelector('form');
 const $name = document.querySelector('#name');
-const $engine = document.querySelector('#engine');
+const $from = document.querySelector('#from');
 const $gitUrl = document.querySelector('#gitUrl');
 const $fileUrl = document.querySelector('#fileUrl');
 const $fileUpload = document.querySelector('#fileUpload');
@@ -18,10 +18,10 @@ function searchParse(search) {
 function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
-  m.render($h2, [o.service||o.process, m('div', m('small', o.engine||''))]);
-  document.body.className = o.service!=null? 'service':'process';
+  m.render($h2, [o.image||o.container, m('div', m('small', o.from||''))]);
+  document.body.className = o.image!=null? 'image':'container';
   if(o.update) $name.setAttribute('disabled', 'disabled');
-  $name.value = o.service||o.process||'';
+  $name.value = o.image||o.container||'';
   return o;
 }
 
@@ -29,10 +29,10 @@ function onSubmit(o) {
   var data = new FormData($form);
   data.set('name', $form.name.value);
   data.set('update', o.update||false);
-  if(!$form.engine.value) data.delete('engine');
+  if(!$form.from.value) data.delete('from');
   console.log('onSubmit()', data);
   var pre = o.update? 'Updated':'Created';
-  var type = o.service!=null? 'service':'process';
+  var type = o.image!=null? 'image':'container';
   m.request({method: 'POST', url: '/'+type, data}).then((data) => {
     iziToast.success({message: `${pre} ${type} ${$form.name.value}`});
   }, (err) => iziToast.error({message: err.message}));

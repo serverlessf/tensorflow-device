@@ -19,14 +19,14 @@ function onReady() {
   console.log('onReady()', o);
   if(o.cmd) $cmd.value = o.cmd;
   if(o.interval) $interval.value = o.interval;
-  m.render($h2, o.process? m([o.process, m('div', m('small', o.engine||''))]):null);
-  document.body.className = o.process? 'process':'os';
+  m.render($h2, o.container? m([o.container, m('div', m('small', o.from||''))]):null);
+  document.body.className = o.container? 'container':'os';
   return o;
 }
 
 function request(cmd, o) {
   console.log('request()', cmd, o);
-  var url = o.process? `/process/${o.process}/exec`:'/exec';
+  var url = o.container? `/container/${o.container}/exec`:'/exec';
   m.request({method: 'POST', url, data: {cmd}}).then((data) => {
     m.render($stdout, data.stdout);
     m.render($stderr, data.stderr);
