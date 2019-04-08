@@ -16,15 +16,15 @@ function onReady() {
 }
 
 async function request(o) {
-  var ssp = m.request({method: 'GET', url: '/image'});
-  var csp = m.request({method: 'GET', url: '/container'});
-  var [ss, cs] = await Promise.all([ssp, csp]);
-  for(var k in ss) ss[k].containers = 0;
-  cs.forEach(c => ss[c.Names[0].substring(1).replace(/\..*$/, '')].containers++);
-  m.render($table, Object.values(ss).map(s => m('tr', [
-    m('td', m('a', {href: `/idata.html?image=${s.name}&from=${s.from}`}, s.name)),
-    m('td', s.version), m('td', s.from), m('td', s.containers),
-    m('td', s.ports.map(p => m('tag', p)))
+  var _is = m.request({method: 'GET', url: '/image'});
+  var _cs = m.request({method: 'GET', url: '/container'});
+  var [is, cs] = await Promise.all([_is, _cs]), imap = new Map();
+  for(var i of is) { imap.set(i.id, i); i.containers = 0; }
+  cs.forEach(c => (imap.get(c.id.replace(/\..*$/, ''))||{}).containers++);
+  m.render($table, Object.values(is).map(i => m('tr', [
+    m('td', m('a', {href: `/idata.html?image=${i.name}&from=${i.from}`}, i.name)),
+    m('td', i.version), m('td', i.from), m('td', i.containers),
+    m('td', i.ports.map(p => m('tag', p)))
   ])));
 }
 

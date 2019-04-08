@@ -43,8 +43,8 @@ function searchParse(search) {
 function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
-  m.request({method: 'GET', url: '/container/'+o.container}).then((p) => {
-    var q = `container=${o.container}&from=${p.Config.Image}&update=1`;
+  m.request({method: 'GET', url: `/container/${o.container}/config`}).then((p) => {
+    var q = `container=${o.container}&from=${p.image}&update=1`;
     $top.setAttribute('href', `/ctop.html?${q}`);
     $logs.setAttribute('href', `/clogs.html?${q}`);
     $upload.setAttribute('href', `/upload.html?${q}`);
@@ -57,29 +57,30 @@ function onReady() {
 async function request(o) {
   console.log('request()', o);
   var id = o.container;
-  var p = await m.request({method: 'GET', url: '/container/'+id});
+  var p = await m.request({method: 'GET', url: `/container/${id}/config`});
+  console.log(p);
   var s = p.State, hc = p.HostConfig, c = p.Config;
-  var rp = hc.RestartPolicy, pb = hc.PortBindings;
-  m.render($h2, [p.Name.substring(1), m('div', m('small', c.Image))]);
+  // var rp = hc.RestartPolicy, pb = hc.PortBindings;
+  m.render($h2, [p.id, m('div', m('small', p.image))]);
   m.render($state, m('tr', [
-    m('td', `${s.Status} (${s.ExitCode}) ${s.Error}`),
-    m('td', moment(p.Created).fromNow()),
-    m('td', moment(s.StartedAt).fromNow()),
-    m('td', moment(s.FinishedAt).fromNow()),
-    m('td', p.RestartCount),
+    m('td', `${p.status} (${p.exitcode}) ${p.error}`),
+    m('td', moment(p.ctime).fromNow()),
+    m('td', moment(p.stime).fromNow()),
+    m('td', moment(p.ftime).fromNow()),
+    m('td', p.restarts),
   ]));
   m.render($policy, m('tr', [
-    m('td', c.WorkingDir),
-    m('td', Object.keys(pb).map(k => m('tag', infoPortBinding(pb, k)))),
-    m('td', `${rp.Name} (max: ${rp.MaximumRetryCount})`),
+    m('td', p.workdir),
+    m('td', Object.keys(p.publish||{}).map(k => m('tag', `${k}->${p.publish[k]}`))),
+    m('td', `${p.restart} (max: ${p.maxrestart||'?'})`),
   ]));
-  m.render($mounts, (p.Mounts||[]).map(v => m('tr', [
-    m('td', v.Type), m('td', v.Source), m('td', v.Destination),
+  m.render($mounts, (p.mounts||[]).map(v => m('tr', [
+    m('td', v.type), m('td', v.source), m('td', v.destination),
   ])));
-  m.render($env, (c.Env||[]).map(v => m('tr', [
+  m.render($env, (p.env||[]).map(v => m('tr', [
     m('td', v.split('=')[0]), m('td', v.split('=')[1]),
   ])));
-  m.render($cmd, (c.Cmd||[]).map(v => m('tr', m('td',
+  m.render($cmd, (p.cmd||[]).map(v => m('tr', m('td',
     m('pre', v.replace(/;\s*/g, ';\n')
   )))));
 }

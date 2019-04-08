@@ -17,14 +17,36 @@ function lsOptions(options) {
   return {all: true, filters: f};
 }
 
+function lsMapPublish(ports) {
+  var ps = ports||[], publish = {};
+  for(var p of ps)
+    publish[p.PublicPort] = `${p.PrivatePort}/${p.Type}`;
+  return publish;
+}
+
 function lsMap(options) {
   var o = options;
   return {
     id: o.Names[0].substring(1), image: o.Image,
     ctime: new Date(o.Created), atime: 0, mtime: 0,
     status: o.State, message: o.Status,
+    publish: lsMapPublish(o.Ports),
   };
 };
+
+function inspectMapPublish(portBindings) {
+  var pbs = portBindings||{}, publish = {};
+  for(var k in pbs)
+    publish[pbs[k][0].HostPort] = k;
+  return publish;
+}
+
+function inspectMapMounts(mounts) {
+  var ms = mounts||[], out = [];
+  for(var m of mounts)
+    out.push({type: m.Type, source: m.Source, target: m.Destination});
+  return out;
+}
 
 function inspectMap(options) {
   var o = options, s = o.State, hc = o.HostConfig, c = o.Config;
@@ -33,6 +55,8 @@ function inspectMap(options) {
     status: s.Status, exitcode: s.ExitCode, error: s.Error,
     stime: new Date(s.StartedAt), ftime: new Date(s.FinishedAt),
     restart: hc.RestartPolicy.Name, image: c.Image, workdir: c.WorkingDir,
+    publish: inspectMapPublish(hc.PortBindings),
+    mounts: inspectMapMounts(o.Mounts),
   };
 }
 

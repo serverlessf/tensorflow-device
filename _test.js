@@ -5,6 +5,7 @@ const container = require('./src/container');
 const docker = new Docker();
 
 async function testImage() {
-  console.log(await image.config('hlo_con'));
+  var cs = await docker.getContainer('4b9fe19c5539').inspect();
+  console.log(JSON.stringify(cs));
 }
 testImage();

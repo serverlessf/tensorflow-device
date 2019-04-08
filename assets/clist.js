@@ -17,16 +17,17 @@ function onReady() {
 }
 
 async function request(o) {
-  var cs = await m.request({method: 'GET', url: '/container?all=1'});
+  var cs = await m.request({method: 'GET', url: '/container'});
   m.render($table, cs.map(c => m('tr', [
-    m('td', m('a', {href: `/cdata.html?container=${c.Names[0].substr(1)}&from=${c.Image}`}, c.Names[0].substr(1))),
-    m('td', c.Image), m('td', c.Status), m('td', c.Ports.map(p => (
-    m('tag', `${p.PublicPort}->${p.PrivatePort}/${p.Type}`)
+    m('td', m('a', {href: `/cdata.html?container=${c.id}&from=${c.image}`}, c.id)),
+    m('td', c.image), m('td', c.message), m('td', Object.keys(c.publish||{}).map(k => (
+    m('tag', `${k}->${c.publish[k]}`)
   )))])));
 }
 
 function onPrune(o) {
-  m.request({method: 'POST', url: '/container/prune'}).then((data) => {
+  var cmd = 'docker container prune -f';
+  m.request({method: 'POST', url: '/exec', data: {cmd}}).then((data) => {
     iziToast.success({message: `${(data.ContainersDeleted||[]).length} containers removed`});
   }, (err) => iziToast.error({message: err.message}));
   return false;
