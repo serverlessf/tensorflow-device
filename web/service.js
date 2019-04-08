@@ -102,15 +102,6 @@ app.post('/:name/run', express.async(async (req, res) => {
   if(QUERY) await needle('post', `http://${QUERY}/${pname}`, o, {json: true});
   res.json({id, name: pname});
 }));
-app.get('/:name/export', (req, res) => {
-  var {name} = req.params;
-  var dir = path.join(ROOT, name);
-  res.writeHead(200, {'content-type': 'application/zip'});
-  var archive = archiver('zip', {zlib: {level: 9}});
-  archive.pipe(res);
-  archive.directory(dir+'/', false);
-  archive.finalize();
-});
 app.post('/:name/:fn', express.async(async (req, res) => {
   var {name, fn} = req.params;
   var procs = await processes(name);
