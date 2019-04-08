@@ -1,4 +1,0 @@
-{
-  "run": ["npm install"],
-  "cmd": ["npm", "start"]
-}

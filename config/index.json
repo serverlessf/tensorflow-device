@@ -1,6 +1,0 @@
-{
-  "version": 0,
-  "ports": [8000],
-  "engine": "python:3.7-slim",
-  "workdir": "/app"
-}

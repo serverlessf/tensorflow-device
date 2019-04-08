@@ -1,5 +1,0 @@
-{
-  "ports": [8500, 8501],
-  "workdir": "/models/model",
-  "env": {"MODEL_NAME": "model"}
-}
