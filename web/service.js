@@ -2,7 +2,6 @@ const dockerNames = require('docker-names');
 const finalhandler = require('finalhandler');
 const serveStatic = require('serve-static');
 const serveIndex = require('serve-index');
-const archiver = require('archiver');
 const Docker = require('dockerode');
 const decompress = require('extra-decompress');
 const express = require('extra-express');
@@ -105,6 +104,7 @@ app.post('/:name/run', express.async(async (req, res) => {
 app.post('/:name/:fn', express.async(async (req, res) => {
   var {name, fn} = req.params;
   var procs = await processes(name);
+  docker.getContainer(id).s
   var _outs = procs.map(p => docker.getContainer(p.Id)[fn](req.body));
   res.json(await Promise.all(_outs));
 }));
