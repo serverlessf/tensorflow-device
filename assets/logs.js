@@ -17,7 +17,8 @@ function searchParse(search) {
 function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
-  m.render($h2, [o.container, m('div', m('small', o.engine||''))]);
+  document.body.className = o.image? 'image':'container';
+  m.render($h2, [o.image||o.container, m('div', m('small', o.from||''))]);
   return Object.assign(o, {stdout: 0, stderr: 0, p:0});;
 }
 
@@ -34,7 +35,8 @@ function render(err, stdout, stderr, o) {
 
 function request(o) {
   console.log('request()', o);
-  var url = `/container/${o.container}/logs`;
+  var typ = o.image? 'image':'container';
+  var url = `/${typ}/${o.image||o.container}/logs`;
   var pout = m.request({method: 'GET', url: url+'?stdout=1'});
   var perr = m.request({method: 'GET', url: url+'?stderr=1'});
   Promise.all([pout, perr]).then(
@@ -42,16 +44,8 @@ function request(o) {
     (err) => render(err, '', err.message||'', o));
 }
 
-function onClear(o) {
-  m.request({method: 'DELETE', url: `/container/${o.container}/logs`}).then((data) => {
-    iziToast.success({message: `Cleared logs of container ${o.container}`});
-  }, (err) => iziToast.error({message: JSON.parse(err.message).stderr}));
-  return false;
-}
-
 
 
 options = onReady();
 request(options);
 setInterval(() => request(options), 1000);
-$clear.onclick = () => onClear(options);

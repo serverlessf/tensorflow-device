@@ -39,3 +39,8 @@ table:not([class]) pre {
   font-weight: bold;
   font-size: 1.4rem;
 }
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
