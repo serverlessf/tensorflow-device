@@ -4,6 +4,9 @@ h1, h2 {
 body, form *, [btn] {
   font-family: 'Baloo Chettan', cursive;
 }
+h2 small {
+  font-size: 1.5rem;
+}
 
 body.image #aimage {
   color: blueviolet;

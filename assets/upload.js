@@ -20,8 +20,8 @@ function onReady() {
   console.log('onReady()', o);
   m.render($h2, [o.image||o.container, m('div', m('small', o.from||''))]);
   document.body.className = o.image!=null? 'image':'container';
-  if(o.update) $id.setAttribute('disabled', 'disabled');
   $id.value = o.image||o.container||'';
+  $from.value = o.from||'';
   return o;
 }
 
@@ -38,7 +38,7 @@ function onSubmit(o) {
     iziToast.success({message: `${pre} ${type} ${id}`});
   }, err => iziToast.error({message: err.message}));
   var url = `/logs.html?image=${id}&from=${from}`;
-  setTimeout(() => location.href = location.origin+url, 2000);
+  setTimeout(() => location.href = location.origin+url, 1000);
   return false;
 }
 

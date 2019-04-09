@@ -1,4 +1,5 @@
 const $h2 = document.querySelector('h2');
+const $p = document.querySelector('p');
 const $run = document.querySelector('#run');
 const $start = document.querySelector('#start');
 const $stop = document.querySelector('#stop');
@@ -7,7 +8,7 @@ const $restart = document.querySelector('#restart');
 const $pause = document.querySelector('#pause');
 const $unpause = document.querySelector('#unpause');
 const $remove = document.querySelector('#remove');
-const $access = document.querySelector('#access');
+const $logs = document.querySelector('#logs');
 const $download = document.querySelector('#download');
 const $upload = document.querySelector('#upload');
 const $state = document.querySelector('#state tbody');
@@ -50,11 +51,8 @@ function searchParse(search) {
 function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
-  m.request({method: 'GET', url: `/image/${o.image}/config`}).then((p) => {
-    var q = `image=${o.image}&from=${o.from}&update=1`;
-    $download.setAttribute('href', `/image/${o.image}/export`);
-    $upload.setAttribute('href', `/upload.html?${q}`);
-  });
+  $upload.setAttribute('href', `/upload.html?image=${o.image}&from=${o.from}&update=1`);
+  $logs.setAttribute('href', `/logs.html?image=${o.image}&from=${o.from}`);
   return o;
 }
 
@@ -65,7 +63,7 @@ async function request(o) {
   var _cs = m.request({method: 'GET', url: '/container'});
   var [i, cs] = await Promise.all([_i, _cs]);
   var {total, created, running, exited} = stateCount(name, cs);
-  m.render($h2, [i.name, m('div', m('small', i.from))]);
+  m.render($h2, [i.id, m('div', m('small', i.from))]);
   m.render($state, m('tr', [
     m('td', moment(i.created).fromNow()), m('td', running),
     m('td', exited), m('td', created), m('td', total),
@@ -104,7 +102,9 @@ function onButton(o, fn, pre, method='POST') {
 
 options = onReady();
 request(options);
-setInterval(() => request(options), 1000);
+setInterval(() => request(options).catch(err => {
+  $p.innerHTML = err? err.message:'';
+}), 1000);
 $run.onclick = () => onRun(options);
 $start.onclick = () => onButton(options, 'start', 'started');
 $stop.onclick = () => onButton(options, 'stop', 'Stopped');

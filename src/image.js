@@ -143,11 +143,12 @@ function logs(id) {
   });
 }
 
+// container commands
 async function command(id, action, all, options) {
   var cs = await docker.listContainers({ancestor: id, all});
   return Promise.all(cs.map(c => {
-    var options = NOOPTIONS.includes(action)? undefined:options;
-    docker.getContainer(c.Id)[action](options);
+    options = NOOPTIONS.includes(action)? undefined:options;
+    return docker.getContainer(c.Id)[action](options);
   }));
 }
 exports.ls = ls;
