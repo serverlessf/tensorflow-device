@@ -137,7 +137,10 @@ function setConfig(id, options) {
 
 function logs(id) {
   var log = path.join(ROOT, id, BUILDLOG);
-  return fs.readFile(log, 'utf8');
+  return fs.readFile(log, 'utf8').catch(err => {
+    if(fs.existsSync(path.join(ROOT, id))) return '';
+    throw err;
+  });
 }
 
 async function command(id, action, all, options) {

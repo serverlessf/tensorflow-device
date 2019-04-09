@@ -22,9 +22,9 @@ async function request(o) {
   for(var i of is) { imap.set(i.id, i); i.containers = 0; }
   cs.forEach(c => (imap.get(c.id.replace(/\..*$/, ''))||{}).containers++);
   m.render($table, Object.values(is).map(i => m('tr', [
-    m('td', m('a', {href: `/idata.html?image=${i.name}&from=${i.from}`}, i.name)),
+    m('td', m('a', {href: `/idata.html?image=${i.id}&from=${i.from}`}, i.id)),
     m('td', i.version), m('td', i.from), m('td', i.containers),
-    m('td', i.ports.map(p => m('tag', p)))
+    m('td', (i.expose||[]).map(p => m('tag', p)))
   ])));
 }
 

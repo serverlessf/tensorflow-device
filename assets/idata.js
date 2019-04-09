@@ -28,11 +28,11 @@ function infoMount(str) {
   return out;
 }
 
-function stateCount(name, ps) {
+function stateCount(id, cs) {
   var total = 0, created = 0, running = 0, exited = 0;
-  for(var p of ps) {
-    var pname = p.Names[0].substring(1), s = p.State;
-    if(pname.replace(/\..*$/, '')!==name) continue;
+  for(var c of cs) {
+    var s = c.status;
+    if(c.image!==id) continue;
     if(s==='created') created++;
     if(s==='running') running++;
     else if(s==='exited') exited++;
@@ -50,10 +50,8 @@ function searchParse(search) {
 function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
-  $access.setAttribute('href', `/image/${o.image}/fs/`);
-  m.request({method: 'GET', url: '/image/'+o.image}).then((p) => {
+  m.request({method: 'GET', url: `/image/${o.image}/config`}).then((p) => {
     var q = `image=${o.image}&from=${o.from}&update=1`;
-    $access.setAttribute('href', `/image/${o.image}/fs/`);
     $download.setAttribute('href', `/image/${o.image}/export`);
     $upload.setAttribute('href', `/upload.html?${q}`);
   });
@@ -63,27 +61,27 @@ function onReady() {
 async function request(o) {
   console.log('request()', o);
   var name = o.image;
-  var sp = m.request({method: 'GET', url: '/image/'+name});
-  var psp = m.request({method: 'GET', url: '/container?all=1'});
-  var [s, ps] = await Promise.all([sp, psp]);
-  var {total, created, running, exited} = stateCount(name, ps);
-  m.render($h2, [s.name, m('div', m('small', s.from))]);
+  var _i = m.request({method: 'GET', url: `/image/${name}/config`});
+  var _cs = m.request({method: 'GET', url: '/container'});
+  var [i, cs] = await Promise.all([_i, _cs]);
+  var {total, created, running, exited} = stateCount(name, cs);
+  m.render($h2, [i.name, m('div', m('small', i.from))]);
   m.render($state, m('tr', [
-    m('td', moment(s.created).fromNow()), m('td', running),
+    m('td', moment(i.created).fromNow()), m('td', running),
     m('td', exited), m('td', created), m('td', total),
   ]));
   m.render($policy, m('tr', [
-    m('td', s.workdir),
-    m('td', s.ports.map(v => m('tag', v))),
-    m('td', `${s.copyfs}`),
+    m('td', i.workdir),
+    m('td', (i.expose||[]).map(v => m('tag', v))),
+    m('td', `${i.copyfs}`),
   ]));
-  m.render($mounts, (s.mounts||[]).map(infoMount).map(v => m('tr', [
+  m.render($mounts, (i.mounts||[]).map(infoMount).map(v => m('tr', [
     m('td', v.type), m('td', v.source), m('td', v.target),
   ])));
-  m.render($env, Object.keys(s.env||{}).map(k => m('tr', [
-    m('td', k), m('td', s.env[k]),
+  m.render($env, Object.keys(i.env||{}).map(k => m('tr', [
+    m('td', k), m('td', i.env[k]),
   ])));
-  m.render($cmd, (s.cmd||[]).map(v => m('tr', m('td',
+  m.render($cmd, (i.cmd||[]).map(v => m('tr', m('td',
     m('pre', v.replace(/;\s*/g, ';\n')
   )))));
 }
