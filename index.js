@@ -109,7 +109,7 @@ app.get('/container', express.async(async (req, res) => {
 }));
 app.delete('/container/:id', express.async(async (req, res) => {
   var {id} = req.params;
-  res.json(await container.command(id, 'stop', req.body));
+  res.json(await container.remove(id, req.body));
 }));
 app.get('/container/:id/config', express.async(async (req, res) => {
   var {id} = req.params;
@@ -118,6 +118,11 @@ app.get('/container/:id/config', express.async(async (req, res) => {
 app.post('/container/:id/exec', express.async(async (req, res) => {
   var {id} = req.params;
   res.json(await container.exec(id, req.body));
+}));
+app.get('/container/:id/export', express.async(async (req, res) => {
+  var {id} = req.params;
+  res.writeHead(200, {'content-type': 'application/x-tar'});
+  (await container.command(id, 'export', req.body)).pipe(res);
 }));
 app.all('/container/:id/:action', express.async(async (req, res) => {
   var {id, action} = req.params;

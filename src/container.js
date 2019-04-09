@@ -64,13 +64,14 @@ function inspectMap(options) {
 
 function dockerExec(container, options) {
   var o = options, e = '';
-  e += `docker container exec -dit`;
+  e += `docker container exec -t`;
   for(var k in o.env||{})
     e += ` -e ${k}=${o.env[k]}`;
   if(o.privileged) e += ` --privileged`;
   if(o.workdir) e += ` -w ${o.workdir}`;
   e += ` ${container}`;
-  for(var c of o.cmd||[])
+  if(typeof o.cmd==='string') e += ` ${o.cmd}`;
+  else for(var c of o.cmd||[])
     e += ` "${c}"`;
   return e;
 }
@@ -84,6 +85,11 @@ async function ls(options) {
   imgs = await Promise.all(Array.from(imap.keys()).map(id => image.config(id)));
   imgs.forEach(i => imap.set(i.id, i));
   return cs.map(c => Object.assign({}, imap.get(c.Image), lsMap(c)));
+}
+
+async function remove(id, options) {
+  await docker.getContainer(id).stop(options);
+  return await docker.getContainer(id).remove(options);
 }
 
 // we can update restart policy of already running containers
@@ -100,9 +106,10 @@ function exec(id, options) {
 // changes, export, logs, getArchive
 function command(id, action, options) {
   options = NOOPTIONS.includes(action)? undefined:options;
-  docker.getContainer(id)[action](options);
+  return docker.getContainer(id)[action](options);
 }
 exports.ls = ls;
+exports.remove = remove;
 exports.config = getConfig;
 exports.exec = exec;
 exports.command = command;

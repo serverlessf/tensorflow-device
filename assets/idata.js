@@ -20,15 +20,6 @@ var options = {};
 
 
 
-function infoMount(str) {
-  var out = {};
-  for(var ln of str.split(',')) {
-    var [k, v] = ln.split('=');
-    out[k] = v||true;
-  }
-  return out;
-}
-
 function stateCount(id, cs) {
   var total = 0, created = 0, running = 0, exited = 0;
   for(var c of cs) {
@@ -73,7 +64,7 @@ async function request(o) {
     m('td', (i.expose||[]).map(v => m('tag', v))),
     m('td', `${i.copyfs}`),
   ]));
-  m.render($mounts, (i.mounts||[]).map(infoMount).map(v => m('tr', [
+  m.render($mounts, (i.mounts||[]).map(v => m('tr', [
     m('td', v.type), m('td', v.source), m('td', v.target),
   ])));
   m.render($env, Object.keys(i.env||{}).map(k => m('tr', [

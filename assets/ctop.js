@@ -21,7 +21,7 @@ function onReady() {
 function request(o) {
   console.log('request()', o);
   m.request({method: 'GET', url: `/container/${o.container}/top`}).then((t) => {
-    m.render($table, t.containeres.map(p => m('tr', p.map(v => m('td', v)))));
+    m.render($table, t.Processes.map(p => m('tr', p.map(v => m('td', v)))));
     m.render($p, null);
   }, (err) => m.render($p, err.message));
 }
