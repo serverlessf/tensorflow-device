@@ -28,7 +28,7 @@ async function request(o) {
 function onPrune(o) {
   var cmd = 'docker container prune -f';
   m.request({method: 'POST', url: '/exec', data: {cmd}}).then((data) => {
-    iziToast.success({message: `${(data.ContainersDeleted||[]).length} containers removed`});
+    iziToast.success({message: `${data.stdout.split('\n').length} containers removed`});
   }, (err) => iziToast.error({message: err.message}));
   return false;
 }

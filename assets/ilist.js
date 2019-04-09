@@ -17,7 +17,7 @@ function onReady() {
 
 async function request(o) {
   var _is = m.request({method: 'GET', url: '/image'});
-  var _cs = m.request({method: 'GET', url: '/container'});
+  var _cs = m.request({method: 'GET', url: '/container?all=0'});
   var [is, cs] = await Promise.all([_is, _cs]), imap = new Map();
   for(var i of is) { imap.set(i.id, i); i.containers = 0; }
   cs.forEach(c => (imap.get(c.id.replace(/\..*$/, ''))||{}).containers++);

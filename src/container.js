@@ -10,11 +10,13 @@ const docker = new Docker();
 
 
 function lsOptions(options) {
-  var o = options||{}, f = {};
-  for(var k in o)
-    f[k] = Array.isArray(o[k])? o[k]:[o[k]];
+  var o = options||{}, f = {}, all = true;
+  for(var k in o) {
+    if(k==='all') all = o[k];
+    else f[k] = Array.isArray(o[k])? o[k]:[o[k]];
+  }
   if(f.image) f.ancestor = f.image;
-  return {all: true, filters: f};
+  return {all, filters: f};
 }
 
 function lsMapPublish(ports) {
