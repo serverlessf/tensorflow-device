@@ -131,4 +131,4 @@ app.use((err, req, res, next) => {
 app.use(express.static(ASSETS, {extensions: ['html']}));
 server.listen(config.PORT, () => console.log('DEVICE running at '+config.DEVICE));
 fs.mkdirpSync(path.join(process.cwd(), '_data/image'));
-fs.copyFileSync(path.join(__dirname, 'config.json'), CONFIG);
+if(!fs.existsSync(CONFIG)) fs.copyFileSync(path.join(__dirname, 'config.json'), CONFIG);
