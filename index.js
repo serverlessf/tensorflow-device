@@ -67,8 +67,9 @@ app.post('/image', express.async(async (req, res) => {
   id = id||path.parse(gitUrl||fileUrl||fileUpload.name).name;
   var tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'image-'));
   await decompress({gitUrl, fileUrl, fileUpload}, tmp);
-  var opt = (await image.exists(id))? await image.config(id):null;
+  var opt = Object.assign(req.body, (await image.exists(id))? await image.config(id):null);
   opt = Object.assign(await config.read(CONFIG), opt, req.body);
+  console.log('Building image', id);
   var out = await image.build(id, tmp, opt);
   await fs.remove(tmp);
   res.json(out);
