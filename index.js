@@ -13,7 +13,6 @@ const os = require('os');
 
 
 
-const NOOPTIONS = ['changes', 'export', 'start'];
 const ASSETS = path.join(__dirname, 'assets');
 const CONFIG = path.join(process.cwd(), '_data', 'config.json');
 const OSFN = [
@@ -23,6 +22,17 @@ const OSFN = [
 ];
 const app = express();
 const server = http.createServer(app);
+
+
+
+function status(fns) {
+  var out = {};
+  for(var f of fns||OSFN)
+    if(OSFN.includes(f)) out[f] = os[f]();
+  return out;
+}
+
+
 
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
@@ -34,29 +44,18 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/os', (req, res) => {
-  var out = {};
-  for(var fn of OSFN)
-    out[fn] = os[fn]();
-  res.json(out);
-});
-app.get('/os/:fn', (req, res) => {
-  var {fn} = req.params;
-  if(OSFN.includes(fn)) return res.json(os[fn]());
-  res.status(404).json('Unknown function '+fn);
-});
+app.get('/status', express.async(async (req, res) => {
+  var {write} = req.body;
+  res.json(await config.read(CONFIG, write? {}:status()));
+}));
+app.post('/status', express.async(async (req, res) => {
+  res.json(await config.write(CONFIG, req.body));
+}));
 
 app.post('/exec', (req, res) => {
   var {cmd} = req.body;
   cp.exec(cmd).then(o => res.json(o), o => res.json(o));
 });
-
-app.get('/config', express.async(async (req, res) => {
-  res.json(await config.read(CONFIG));
-}));
-app.post('/config', express.async(async (req, res) => {
-  res.json(await config.write(CONFIG, req.body));
-}));
 
 app.get('/image', express.async(async (req, res) => {
   res.json(await image.ls(req.body));
