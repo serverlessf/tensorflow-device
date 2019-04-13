@@ -39,6 +39,7 @@ function message(o) {
 }
 
 function onGet(o) {
+  console.log('onGet()', o);
   var write = o.write? '?write=1':'';
   m.request({method: 'GET', url: url(o)+write}).then((data) => {
     editor.setValue(JSON.stringify(data, null, 2)); editor.gotoLine(1);
@@ -47,6 +48,7 @@ function onGet(o) {
 }
 
 function onPost(o) {
+  console.log('onPost()', o);
   var data = JSON.parse(editor.getValue());
   m.request({method: 'POST', url: url(o), data}).then(() => {
     iziToast.success({message: message(o)});
