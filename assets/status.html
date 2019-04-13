@@ -30,18 +30,21 @@
 <h2></h2>
 <form>
 <grid>
-<div col="5/6">
-  <label>Execute command</label>
-  <input type="text" id="cmd" placeholder="e.g. uptime">
+<div col="1/2">
+  <input type="radio" name="source" id="readable"><label for="readable">Readable</label><br>
+  <input type="radio" name="source" id="writable"><label for="writable">Writable</label><br>
 </div>
-<div col="1/6">
-  <label>Interval</label>
-  <input type="text" id="interval" value="0">
+<div col="1/2" txt="c">
+  <button id="read">Read</button><br>
+  <button id="write">Write</button><br>
 </div>
 </grid>
-<div id="editor"></div>
 </form>
+</section>
+<section>
+<div id="editor"></div>
 </section></main>
+
 
 
 </body>
