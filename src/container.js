@@ -88,7 +88,7 @@ async function ls(options) {
 }
 
 async function remove(id, options) {
-  await docker.getContainer(id).stop(options);
+  try { await docker.getContainer(id).stop(options); } catch (e) {}
   return await docker.getContainer(id).remove(options);
 }
 
