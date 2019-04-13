@@ -44,8 +44,6 @@ async function request(o) {
   var id = o.container;
   var p = await m.request({method: 'GET', url: `/container/${id}/config`});
   console.log(p);
-  var s = p.State, hc = p.HostConfig, c = p.Config;
-  // var rp = hc.RestartPolicy, pb = hc.PortBindings;
   m.render($h2, [p.id, m('div', m('small', p.image))]);
   m.render($state, m('tr', [
     m('td', `${p.status} (${p.exitcode}) ${p.error}`),

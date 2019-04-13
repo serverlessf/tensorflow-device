@@ -32,7 +32,7 @@ function lsMap(options) {
     id: o.Names[0].substring(1), image: o.Image,
     ctime: new Date(o.Created), atime: 0, mtime: 0,
     status: o.State, message: o.Status,
-    publish: lsMapPublish(o.Ports),
+    publish: lsMapPublish(o.Ports), env: o.Env,
   };
 };
 
@@ -50,6 +50,15 @@ function inspectMapMounts(mounts) {
   return out;
 }
 
+function inspectMapEnv(env) {
+  var out = {};
+  for(var e of env) {
+    var p = e.split('=');
+    out[p[0]] = p[1]||'';
+  }
+  return out;
+}
+
 function inspectMap(options) {
   var o = options, s = o.State, hc = o.HostConfig, c = o.Config;
   return {
@@ -58,7 +67,7 @@ function inspectMap(options) {
     stime: new Date(s.StartedAt), ftime: new Date(s.FinishedAt),
     restart: hc.RestartPolicy.Name, image: c.Image, workdir: c.WorkingDir,
     publish: inspectMapPublish(hc.PortBindings),
-    mounts: inspectMapMounts(o.Mounts),
+    mounts: inspectMapMounts(o.Mounts), env: inspectMapEnv(c.Env),
   };
 }
 
