@@ -16,6 +16,11 @@ const docker = new Docker();
 
 
 
+function findKey(object, value) {
+  for(var k in object)
+    if(object[k]===value) return k;
+}
+
 // from, workdir, run, expose, env, cmd
 function dockerFile(options) {
   var o = options, f = '';
@@ -45,9 +50,9 @@ async function dockerPublish(options) {
 // env, publish, expose
 function dockerEnv(app, instance, options) {
   var o = options, env = o.env||{};
-  var publish = Object.keys(o.publish||{});
-  env['PORT'] = (o.expose||[]).join();
-  env['ADDRESS'] = publish.map(p => `${config.IP}:${p}`);
+  var expose = o.expose||[], publish = o.publish||{};
+  env['PORT'] = expose.join();
+  env['ADDRESS'] = expose.map(p => `${config.IP}:${findKey(publish, p)}`).join(',');
   env['DEVICE'] = config.DEVICE;
   env['MASTER'] = config.MASTER;
   env['INSTANCE'] = instance;
