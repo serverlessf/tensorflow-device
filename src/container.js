@@ -102,7 +102,7 @@ async function remove(id, options) {
 }
 
 // we can update restart policy of already running containers
-async function getConfig(id, options) {
+async function status(id, options) {
   var c = await docker.getContainer(id).inspect(options);
   var i = await image.config(c.Config.Image);
   return Object.assign(i, inspectMap(c));
@@ -119,6 +119,6 @@ function command(id, action, options) {
 }
 exports.ls = ls;
 exports.remove = remove;
-exports.config = getConfig;
+exports.status = status;
 exports.exec = exec;
 exports.command = command;

@@ -129,13 +129,13 @@ async function exists(id) {
   return ids.includes(id);
 }
 
-async function getConfig(id) {
+async function status(id) {
   var cfg = path.join(ROOT, id, CONFIGFILE);
   var img = await docker.getImage(id).inspect();
   return config.read(cfg, inspectMap(img));
 }
 
-function setConfig(id, options) {
+function setStatus(id, options) {
   var cfg = path.join(ROOT, id, CONFIGFILE);
   return config.write(cfg, options);
 }
@@ -161,7 +161,7 @@ exports.build = build;
 exports.run = run;
 exports.remove = remove;
 exports.exists = exists;
-exports.config = getConfig;
-exports.setConfig = setConfig;
+exports.status = status;
+exports.setStatus = setStatus;
 exports.logs = logs;
 exports.command = command;
