@@ -91,7 +91,7 @@ async function ls(options) {
   var imap = new Map();
   var cs = await docker.listContainers(lsOptions(options));
   cs.forEach(c => imap.set(c.Image, null));
-  imgs = await Promise.all(Array.from(imap.keys()).map(id => image.config(id)));
+  imgs = await Promise.all(Array.from(imap.keys()).map(id => image.status(id)));
   imgs.forEach(i => imap.set(i.id, i));
   return cs.map(c => Object.assign({}, imap.get(c.Image), lsMap(c)));
 }
@@ -104,7 +104,7 @@ async function remove(id, options) {
 // we can update restart policy of already running containers
 async function status(id, options) {
   var c = await docker.getContainer(id).inspect(options);
-  var i = await image.config(c.Config.Image);
+  var i = await image.status(c.Config.Image);
   return Object.assign(i, inspectMap(c));
 }
 
