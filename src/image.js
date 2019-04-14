@@ -129,10 +129,11 @@ async function exists(id) {
   return ids.includes(id);
 }
 
-async function status(id) {
+async function status(id, write=false) {
   var cfg = path.join(ROOT, id, CONFIGFILE);
-  var img = await docker.getImage(id).inspect();
-  return config.read(cfg, inspectMap(img));
+  var _ins = write? {}:docker.getImage(id).inspect();
+  var [wrt, ins] = await Promise.all([config.read(cfg), _ins]);
+  return Object.assign(wrt, ins);
 }
 
 function setStatus(id, options) {

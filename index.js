@@ -86,13 +86,14 @@ app.delete('/image/:id', express.async(async (req, res) => {
   var {id} = req.params;
   res.json(await image.remove(id, req.body));
 }));
-app.get('/image/:id/config', express.async(async (req, res) => {
-  var {id} = req.params;
-  res.json(await image.config(id, req.body));
+app.get('/image/:id/status', express.async(async (req, res) => {
+  var {id} = req.params, {write} = req.body;
+  var [app, img] = await Promise.all([config.read(CONFIG, status()), image.status(id)]);
+  res.json(await image.status(id, req.body));
 }));
-app.post('/image/:id/config', express.async(async (req, res) => {
+app.post('/image/:id/status', express.async(async (req, res) => {
   var {id} = req.params;
-  res.json(await image.setConfig(id, req.body));
+  res.json(await image.setStatus(id, req.body));
 }));
 app.get('/image/:id/logs', express.async(async (req, res) => {
   var {id} = req.params, {stderr} = req.body;
@@ -112,7 +113,7 @@ app.delete('/container/:id', express.async(async (req, res) => {
 }));
 app.get('/container/:id/config', express.async(async (req, res) => {
   var {id} = req.params;
-  res.json(await container.config(id, req.body));
+  res.json(await container.status(id, req.body));
 }));
 app.post('/container/:id/exec', express.async(async (req, res) => {
   var {id} = req.params;
