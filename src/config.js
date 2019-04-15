@@ -35,23 +35,20 @@ const SPECIFIC = {
 
 
 
-async function write(cfg, options) {
-  var o = fs.existsSync(cfg)? JSON.parse(await fs.readFile(cfg, 'utf8')):{};
-  await fs.writeFile(cfg, JSON.stringify(Object.assign(o, options), null, 2));
-  return o;
-}
-
-async function read(cfg, options) {
-  var o = fs.existsSync(cfg)? JSON.parse(await fs.readFile(cfg, 'utf8')):{};
-  return Object.assign(o, options);
-}
-
-function defaults(options) {
-  var o = Object.assign({}, COMMON, options);
+function defaults(value) {
+  var o = Object.assign({}, COMMON, value);
   var from = o.from.replace(/\W.*/, '');
   o = Object.assign(o, SPECIFIC[from], o);
   o.ctime = o.atime = o.mtime = new Date();
   return o;
+}
+
+async function read(file) {
+  return fs.existsSync(file)? JSON.parse(await fs.readFile(file, 'utf8')):{};
+}
+
+async function write(file, value) {
+  await fs.writeFile(file, JSON.stringify(Object.assign(await read(file), value), null, 2));
 }
 exports.IP = IP;
 exports.PORT = PORT;
