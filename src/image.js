@@ -87,7 +87,11 @@ function lsMap(options) {
     size: o.Size, tags: o.RepoTags
   };
 }
+
 const inspectMap = lsMap;
+function inspect(id) {
+  return docker.getImage(id).inspect().then(inspectMap);
+}
 
 
 
@@ -129,16 +133,14 @@ async function exists(id) {
   return ids.includes(id);
 }
 
-async function status(id, write=false) {
-  var cfg = path.join(ROOT, id, CONFIGFILE);
-  var _ins = write? {}:docker.getImage(id).inspect();
-  var [wrt, ins] = await Promise.all([config.read(cfg), _ins]);
-  return Object.assign(wrt, ins);
+function status(id, prev={}, state=inspect(id)) {
+  var file = path.join(ROOT, id, CONFIGFILE);
+  return Promise.all([prev, config.read(file), state]).then(vs => Object.assign.apply(null, vs));
 }
 
-function setStatus(id, options) {
-  var cfg = path.join(ROOT, id, CONFIGFILE);
-  return config.write(cfg, options);
+function setStatus(id, value) {
+  var file = path.join(ROOT, id, CONFIGFILE);
+  return config.write(file, value);
 }
 
 function logs(id) {
