@@ -1,10 +1,14 @@
 const Docker = require('dockerode');
 const cp = require('extra-cp');
 const image = require('./image');
+const config = require('./config')
+const path = require('path');
 
 
 
 const NOOPTIONS = ['changes', 'export', 'start'];
+const ROOT = path.join(process.cwd(), '_data', 'container');
+const CONFIGFILE = 'config.json';
 const docker = new Docker();
 
 
@@ -71,6 +75,10 @@ function inspectMap(options) {
   };
 }
 
+function inspect(id) {
+  return docker.getContainer(id).inspect().then(inspectMap);
+}
+
 function dockerExec(container, options) {
   var o = options, e = '';
   e += `docker container exec -t`;
@@ -102,10 +110,14 @@ async function remove(id, options) {
 }
 
 // we can update restart policy of already running containers
-async function status(id, options) {
-  var c = await docker.getContainer(id).inspect(options);
-  var i = await image.status(c.Config.Image);
-  return Object.assign(i, inspectMap(c));
+async function status(id, prev={}, state=inspect(id)) {
+  var file = path.join(ROOT, id, CONFIGFILE);
+  return Promise.all([prev, config.read(file), state]).then(vs => Object.assign.apply(null, vs));
+}
+
+function setStatus(id, value) {
+  var file = path.join(ROOT, id, CONFIGFILE);
+  return config.write(file, value);
 }
 
 function exec(id, options) {
@@ -120,5 +132,6 @@ function command(id, action, options) {
 exports.ls = ls;
 exports.remove = remove;
 exports.status = status;
+exports.setStatus = setStatus;
 exports.exec = exec;
 exports.command = command;
