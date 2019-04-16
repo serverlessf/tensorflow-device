@@ -1,4 +1,5 @@
 const DEVICE = ['arch', 'endianness', 'hostname', 'platform', 'release', 'type', 'tmpdir'];
+const $h2 = document.querySelector('h2');
 const $deviceInfo = document.querySelector('#deviceInfo tbody');
 const $userInfo = document.querySelector('#userInfo tbody');
 const $usage = document.querySelector('#usage tbody');
@@ -11,6 +12,7 @@ async function request() {
   console.log('request()');
   var o = await m.request({method: 'GET', url: '/status'});
   var ui = o.userInfo, ni = o.networkInterfaces;
+  m.render($h2, [o.id, m('div', m('small', o.owner))]);
   m.render($deviceInfo, m('tr', DEVICE.map(k => m('td', o[k]))));
   m.render($userInfo, m('tr', Object.keys(ui).map(k => m('td', `${ui[k]}`))));
   m.render($usage, m('tr', [
@@ -29,8 +31,6 @@ async function request() {
     return trs;
   }, []));
 }
-
-
 
 request();
 setInterval(request, 1000);
