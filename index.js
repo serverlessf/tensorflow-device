@@ -72,7 +72,7 @@ app.delete('/image/:id', express.async(async (req, res) => {
 }));
 app.get('/image/:id/status', express.async(async (req, res) => {
   var {id} = req.params, write = boolean(req.body.write);
-  res.json(await image.status(id, device.status({}), write? {}:null));
+  res.json(await image.status(id, write? {}:device.status({}), write? {}:null));
 }));
 app.post('/image/:id/status', express.async(async (req, res) => {
   var {id} = req.params;
@@ -97,6 +97,7 @@ app.delete('/container/:id', express.async(async (req, res) => {
 app.get('/container/:id/status', express.async(async (req, res) => {
   var {id} = req.params, write = boolean(req.body.write);
   var c = await container.status(id, {}, write? {}:null);
+  if(write) return res.json(c);
   res.json(Object.assign(await image.status(c.image, device.status({}), {}), c));
 }));
 app.post('/container/:id/status', express.async(async (req, res) => {
