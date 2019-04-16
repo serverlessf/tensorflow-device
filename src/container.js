@@ -48,8 +48,8 @@ function inspectMapPublish(portBindings) {
 }
 
 function inspectMapMounts(mounts) {
-  var ms = mounts||[], out = [];
-  for(var m of mounts)
+  var out = [];
+  for(var m of mounts||[])
     out.push({type: m.Type, source: m.Source, target: m.Destination});
   return out;
 }
