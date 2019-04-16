@@ -4,7 +4,7 @@ const express = require('extra-express');
 const fs = require('extra-fs');
 const decompress = require('extra-decompress');
 const cp = require('extra-cp');
-Boolean = require('extra-boolean');
+const boolean = require('boolean');
 const http = require('http');
 const path = require('path');
 const config = require('./src/config');
@@ -31,11 +31,11 @@ app.use((req, res, next) => {
 });
 
 app.get('/status', express.async(async (req, res) => {
-  var {write} = req.body;
-  res.json(await config.read(CONFIG, write? {}:osState()));
+  var write = boolean(req.body.write);
+  res.json(await device.status(write? {}:null));
 }));
 app.post('/status', express.async(async (req, res) => {
-  res.json(await config.write(CONFIG, req.body));
+  res.json(await device.setStatus(req.body));
 }));
 
 app.post('/exec', (req, res) => {
@@ -73,9 +73,8 @@ app.delete('/image/:id', express.async(async (req, res) => {
   res.json(await image.remove(id, req.body));
 }));
 app.get('/image/:id/status', express.async(async (req, res) => {
-  var {id} = req.params, {write} = req.body;
-  var [app, img] = await Promise.all([config.read(CONFIG, osState()), image.status(id)]);
-  res.json(await image.status(id, req.body));
+  var {id} = req.params, write = boolean(req.body.write);
+  res.json(await image.status(id, device.status({}), write? {}:null));
 }));
 app.post('/image/:id/status', express.async(async (req, res) => {
   var {id} = req.params;
@@ -97,9 +96,14 @@ app.delete('/container/:id', express.async(async (req, res) => {
   var {id} = req.params;
   res.json(await container.remove(id, req.body));
 }));
-app.get('/container/:id/config', express.async(async (req, res) => {
+app.get('/container/:id/status', express.async(async (req, res) => {
+  var {id} = req.params, write = boolean(req.body.write);
+  var c = await container.status(id, {}, write? {}:null);
+  res.json(Object.assign(await image.status(c.image, device.status({}), {}), c));
+}));
+app.post('/container/:id/status', express.async(async (req, res) => {
   var {id} = req.params;
-  res.json(await container.status(id, req.body));
+  res.json(await container.setStatus(id, req.body));
 }));
 app.post('/container/:id/exec', express.async(async (req, res) => {
   var {id} = req.params;
