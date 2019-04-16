@@ -3,34 +3,20 @@ const dockerNames = require('docker-names');
 const express = require('extra-express');
 const fs = require('extra-fs');
 const decompress = require('extra-decompress');
+const cp = require('extra-cp');
+Boolean = require('extra-boolean');
 const http = require('http');
 const path = require('path');
 const config = require('./src/config');
 const container = require('./src/container');
 const image = require('./src/image');
-const cp = require('extra-cp');
-const os = require('os');
+const device = require('./src/device');
 
 
 
 const ASSETS = path.join(__dirname, 'assets');
-const CONFIG = path.join(process.cwd(), '_data', 'config.json');
-const OSFN = [
-  'arch', 'cpus', 'endianness', 'freemem', 'homedir', 'hostname',
-  'loadavg', 'networkInterfaces', 'platform', 'release', 'tmpdir',
-  'totalmem', 'type', 'uptime', 'userInfo'
-];
 const app = express();
 const server = http.createServer(app);
-
-
-
-function status(fns) {
-  var out = {};
-  for(var f of fns||OSFN)
-    if(OSFN.includes(f)) out[f] = os[f]();
-  return out;
-}
 
 
 
@@ -46,7 +32,7 @@ app.use((req, res, next) => {
 
 app.get('/status', express.async(async (req, res) => {
   var {write} = req.body;
-  res.json(await config.read(CONFIG, write? {}:status()));
+  res.json(await config.read(CONFIG, write? {}:osState()));
 }));
 app.post('/status', express.async(async (req, res) => {
   res.json(await config.write(CONFIG, req.body));
@@ -88,7 +74,7 @@ app.delete('/image/:id', express.async(async (req, res) => {
 }));
 app.get('/image/:id/status', express.async(async (req, res) => {
   var {id} = req.params, {write} = req.body;
-  var [app, img] = await Promise.all([config.read(CONFIG, status()), image.status(id)]);
+  var [app, img] = await Promise.all([config.read(CONFIG, osState()), image.status(id)]);
   res.json(await image.status(id, req.body));
 }));
 app.post('/image/:id/status', express.async(async (req, res) => {
@@ -135,5 +121,3 @@ app.use((err, req, res, next) => {
 });
 app.use(express.static(ASSETS, {extensions: ['html']}));
 server.listen(config.PORT, () => console.log('DEVICE running at '+config.DEVICE));
-fs.mkdirpSync(path.join(process.cwd(), '_data/image'));
-if(!fs.existsSync(CONFIG)) fs.copyFileSync(path.join(__dirname, 'config.json'), CONFIG);

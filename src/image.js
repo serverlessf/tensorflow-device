@@ -52,7 +52,7 @@ function dockerEnv(app, instance, options) {
   var o = options, env = o.env||{};
   var expose = o.expose||[], publish = o.publish||{};
   env['PORT'] = expose.join();
-  env['ADDRESS'] = expose.map(p => `${config.IP}:${findKey(publish, p)}`).join(',');
+  env['ADDRESS'] = expose.map(p => `${config.IP}:${findKey(publish, p)}`).join(','); // <- publish structure complex!
   env['DEVICE'] = config.DEVICE;
   env['MASTER'] = config.MASTER;
   env['INSTANCE'] = instance;
@@ -168,3 +168,4 @@ exports.status = status;
 exports.setStatus = setStatus;
 exports.logs = logs;
 exports.command = command;
+fs.mkdirpSync(ROOT);

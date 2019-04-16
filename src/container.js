@@ -1,8 +1,9 @@
 const Docker = require('dockerode');
 const cp = require('extra-cp');
+const fs = require('extra-fs');
+const path = require('path');
 const image = require('./image');
 const config = require('./config')
-const path = require('path');
 
 
 
@@ -135,3 +136,4 @@ exports.status = status;
 exports.setStatus = setStatus;
 exports.exec = exec;
 exports.command = command;
+fs.mkdirpSync(ROOT);
