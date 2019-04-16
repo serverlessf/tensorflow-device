@@ -96,9 +96,11 @@ function inspect(id) {
 
 
 async function ls(options) {
+  // NOTE: config.read() changed, this needs to be fixed
   var ids = await fs.readdir(ROOT), imap = new Map();
-  var imgs = await docker.listImages(options);
-  imgs.map(lsMap).forEach(i => imap.set(i.id, i));
+  var imgs = (await docker.listImages(options)).map(lsMap);
+  imgs.forEach(i => imap.set(i.id, i));
+  console.log(imap);
   var _ls = ids.map(id => config.read(path.join(ROOT, id, CONFIGFILE), imap.get(id)));
   return await Promise.all(_ls);
 }
@@ -115,7 +117,8 @@ async function build(id, dir, options) {
 
 async function run(id, name, options) {
   var cfg = path.join(ROOT, id, CONFIGFILE);
-  var o = await config.read(cfg, options);
+  // should use global status here
+  var o = Object.assign(await config.read(cfg), options);
   await dockerPublish(o);
   dockerEnv(id, name, o);
   return cp.exec(dockerRun(id, name, o));

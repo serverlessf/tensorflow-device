@@ -16,6 +16,7 @@ function onReady() {
 }
 
 async function request(o) {
+  console.log('request()', o);
   var _is = m.request({method: 'GET', url: '/image'});
   var _cs = m.request({method: 'GET', url: '/container?all=0'});
   var [is, cs] = await Promise.all([_is, _cs]), imap = new Map();
