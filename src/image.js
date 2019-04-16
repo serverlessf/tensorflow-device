@@ -100,12 +100,12 @@ async function ls(options) {
   var ids = await fs.readdir(ROOT), imap = new Map();
   var imgs = (await docker.listImages(options)).map(lsMap);
   imgs.forEach(i => imap.set(i.id, i));
-  console.log(imap);
-  var _ls = ids.map(id => config.read(path.join(ROOT, id, CONFIGFILE), imap.get(id)));
+  var _ls = ids.map(id => config.read(path.join(ROOT, id, CONFIGFILE)).then(v => Object.assign(v, imap.get(id))));
   return await Promise.all(_ls);
 }
 
 async function build(id, dir, options) {
+  console.log(options);
   var o = config.defaults(options);
   var df = path.join(dir, DOCKERFILE);
   await fs.writeFile(df, dockerFile(o));
@@ -116,9 +116,9 @@ async function build(id, dir, options) {
 }
 
 async function run(id, name, options) {
-  var cfg = path.join(ROOT, id, CONFIGFILE);
+  var file = path.join(ROOT, id, CONFIGFILE);
   // should use global status here
-  var o = Object.assign(await config.read(cfg), options);
+  var o = Object.assign(await config.read(file), options);
   await dockerPublish(o);
   dockerEnv(id, name, o);
   return cp.exec(dockerRun(id, name, o));
