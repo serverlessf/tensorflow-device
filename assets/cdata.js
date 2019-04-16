@@ -10,6 +10,7 @@ const $remove = document.querySelector('#remove');
 const $top = document.querySelector('#top');
 const $logs = document.querySelector('#logs');
 const $exec = document.querySelector('#exec');
+const $status = document.querySelector('#status');
 const $download = document.querySelector('#download');
 const $state = document.querySelector('#state tbody');
 const $policy = document.querySelector('#policy tbody');
@@ -30,10 +31,11 @@ function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
   m.request({method: 'GET', url: `/container/${o.container}/config`}).then((p) => {
-    var q = `container=${o.container}&from=${p.image}&update=1`;
-    $top.setAttribute('href', `/ctop.html?${q}`);
-    $logs.setAttribute('href', `/logs.html?${q}`);
-    $exec.setAttribute('href', `/exec.html?container=${o.container}`);
+    var q = `container=${o.container}&from=${p.image}`;
+    $top.setAttribute('href', `/ctop.html?${q}&update=1`);
+    $logs.setAttribute('href', `/logs.html?${q}&update=1`);
+    $exec.setAttribute('href', `/exec.html?${q}`);
+    $status.setAttribute('href', `/status.html?${q}&write=1`);
     $download.setAttribute('href', `/container/${o.container}/export`);
   });
   return o;

@@ -1,3 +1,4 @@
+const $h2 = document.querySelector('h2');
 const $write = document.querySelector('#write');
 const $get = document.querySelector('#get');
 const $post = document.querySelector('#post');
@@ -18,12 +19,10 @@ function searchParse(search) {
   .replace(/&/g, '","').replace(/=/g,'":"') + '"}'):{};
 }
 
-function onReady() {
-  var o = searchParse(location.search);
-  console.log('onReady()', o);
-  $write.checked = !!o.write;
-  onGet(o);
-  return o;
+function mode(o) {
+  if(o.image) return 'image';
+  if(o.container) return 'container';
+  return 'status';
 }
 
 function url(o) {
@@ -36,6 +35,16 @@ function message(o) {
   if(o.image) return `Status saved to image ${o.image}`;
   if(o.container) return `Status saved to container ${o.container}`;
   return `Status saved to device`;
+}
+
+function onReady() {
+  var o = searchParse(location.search);
+  console.log('onReady()', o);
+  document.body.className = mode(o);
+  m.render($h2, [o.image||o.container, m('div', m('small', o.from))]);
+  $write.checked = !!o.write;
+  onGet(o);
+  return o;
 }
 
 function onGet(o) {

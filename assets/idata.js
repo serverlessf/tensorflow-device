@@ -9,7 +9,7 @@ const $pause = document.querySelector('#pause');
 const $unpause = document.querySelector('#unpause');
 const $remove = document.querySelector('#remove');
 const $logs = document.querySelector('#logs');
-const $download = document.querySelector('#download');
+const $status = document.querySelector('#status');
 const $upload = document.querySelector('#upload');
 const $state = document.querySelector('#state tbody');
 const $policy = document.querySelector('#policy tbody');
@@ -42,8 +42,10 @@ function searchParse(search) {
 function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
-  $upload.setAttribute('href', `/upload.html?image=${o.image}&from=${o.from}&update=1`);
-  $logs.setAttribute('href', `/logs.html?image=${o.image}&from=${o.from}`);
+  var q = `image=${o.image}&from=${o.from}`;
+  $logs.setAttribute('href', `/logs.html?${q}`);
+  $status.setAttribute('href', `/status.html?${q}&write=1`);
+  $upload.setAttribute('href', `/upload.html?${q}&update=1`);
   return o;
 }
 
