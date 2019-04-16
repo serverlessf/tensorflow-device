@@ -25,7 +25,7 @@ function osValues(fns=OSFUNCTIONS) {
 function copyConfig() {
   var file = path.join(ROOT, CONFIGFILE);
   if(fs.existsSync(file)) return;
-  fs.copyFileSync(path.join(__dirname, CONFIGFILE), file);
+  fs.copyFileSync(path.join(config.DIRNAME, CONFIGFILE), file);
 }
 
 

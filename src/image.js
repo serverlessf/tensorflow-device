@@ -158,7 +158,6 @@ exports.ls = ls;
 exports.build = build;
 exports.run = run;
 exports.remove = remove;
-exports.exists = exists;
 exports.status = status;
 exports.setStatus = setStatus;
 exports.logs = logs;

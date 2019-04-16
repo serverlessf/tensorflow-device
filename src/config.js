@@ -9,6 +9,7 @@ const IP = net.address().address;
 const PORT = parseInt(E['PORT']||'8000', 10);
 const DEVICE = `${IP}:${PORT}`;
 const MASTER = E['MASTER']||'';
+const DIRNAME = path.dirname(require.main.filename);
 const COMMON = {
   version: 0,
   expose: [8000],
@@ -56,6 +57,7 @@ exports.IP = IP;
 exports.PORT = PORT;
 exports.DEVICE = DEVICE;
 exports.MASTER = MASTER;
+exports.DIRNAME = DIRNAME;
 exports.write = write;
 exports.read = read;
 exports.defaults = defaults;
