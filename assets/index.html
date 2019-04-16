@@ -33,8 +33,8 @@
   <a btn href="/exec.html?cmd=sudo reboot">Reboot</a>
   <a btn href="/exec.html?cmd=shutdown -h now">Shutdown</a>
 </form>
-<table id="device">
-  <caption>Device</caption>
+<table id="deviceInfo">
+  <caption>Device Info</caption>
   <thead><tr>
     <th>Arch</th>
     <th>Endianness</th>
@@ -42,17 +42,7 @@
     <th>Platform</th>
     <th>Release</th>
     <th>Type</th>
-    <th>Uptime</th>
     <th>Tmpdir</th>
-  </tr></thead>
-  <tbody></tbody>
-</table>
-<table id="usage">
-  <caption>Usage</caption>
-  <thead><tr>
-    <th>Load avg</th>
-    <th>Total mem</th>
-    <th>Free mem</th>
   </tr></thead>
   <tbody></tbody>
 </table>
@@ -64,6 +54,16 @@
     <th>Username</th>
     <th>Homedir</th>
     <th>Shell</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+<table id="usage">
+  <caption>Usage</caption>
+  <thead><tr>
+    <th>Uptime</th>
+    <th>Total mem</th>
+    <th>Free mem</th>
+    <th>Load avg</th>
   </tr></thead>
   <tbody></tbody>
 </table>
