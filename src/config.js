@@ -1,5 +1,6 @@
 const fs = require('extra-fs');
 const net = require('extra-net');
+const path = require('path');
 
 
 
@@ -48,6 +49,7 @@ async function read(file) {
 }
 
 async function write(file, value) {
+  await fs.mkdirp(path.dirname(file));
   await fs.writeFile(file, JSON.stringify(Object.assign(await read(file), value), null, 2));
 }
 exports.IP = IP;
