@@ -1,6 +1,9 @@
 {
   "id": "asus-rony",
-  "location": "jeedimetla",
-  "geox": 92,
-  "geoy": 19
+  "address": "Alekhya Windmills, Shilpa Layout, Khanamet, HITEC City",
+  "city" : "Hyderabad",
+  "state": "Telangana",
+  "pincode": "500084",
+  "latitude": 17.46,
+  "longitude": 78.37
 }
