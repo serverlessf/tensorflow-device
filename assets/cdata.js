@@ -30,7 +30,7 @@ function searchParse(search) {
 function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
-  m.request({method: 'GET', url: `/container/${o.container}/config`}).then((p) => {
+  m.request({method: 'GET', url: `/container/${o.container}/status`}).then((p) => {
     var q = `container=${o.container}&from=${p.image}`;
     $top.setAttribute('href', `/ctop.html?${q}&update=1`);
     $logs.setAttribute('href', `/logs.html?${q}&update=1`);
@@ -44,7 +44,7 @@ function onReady() {
 async function request(o) {
   console.log('request()', o);
   var id = o.container;
-  var p = await m.request({method: 'GET', url: `/container/${id}/config`});
+  var p = await m.request({method: 'GET', url: `/container/${id}/status`});
   console.log(p);
   m.render($h2, [p.id, m('div', m('small', p.image))]);
   m.render($state, m('tr', [

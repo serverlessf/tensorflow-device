@@ -52,7 +52,7 @@ function onReady() {
 async function request(o) {
   console.log('request()', o);
   var name = o.image;
-  var _i = m.request({method: 'GET', url: `/image/${name}/config`});
+  var _i = m.request({method: 'GET', url: `/image/${name}/status`});
   var _cs = m.request({method: 'GET', url: '/container'});
   var [i, cs] = await Promise.all([_i, _cs]);
   var {total, created, running, exited} = stateCount(name, cs);
