@@ -7,6 +7,7 @@ const cp = require('extra-cp');
 const boolean = require('boolean');
 const http = require('http');
 const path = require('path');
+const os = require('os');
 const config = require('./src/config');
 const container = require('./src/container');
 const image = require('./src/image');
@@ -47,16 +48,13 @@ app.get('/image', express.async(async (req, res) => {
   res.json(await image.ls(req.body));
 }));
 app.post('/image', express.async(async (req, res) => {
-  var {id, gitUrl, fileUrl} = req.body;
+  var {id, gitUrl, fileUrl, version} = req.body;
   var {fileUpload} = req.files||{};
   id = id||path.parse(gitUrl||fileUrl||fileUpload.name).name;
   var tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'image-'));
   await decompress({gitUrl, fileUrl, fileUpload}, tmp);
-  var exists = await image.exists(id);
-  var o = exists? await image.config(id):{};
-  var version = o.version||0;
-  o = Object.assign(await config.read(CONFIG), o, req.body);
-  o.version = Math.max(o.version||0, version+1);
+  var o = await image.status(id, {}, {});
+  o.version = Math.max(parseInt(version||'0', 10), (o.version||0)+1);
   console.log('Building image', id, o.version);
   var out = await image.build(id, tmp, o);
   await fs.remove(tmp);

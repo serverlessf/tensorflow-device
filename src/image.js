@@ -128,11 +128,6 @@ async function remove(id, options) {
   return fs.remove(path.join(ROOT, id));
 }
 
-async function exists(id) {
-  var ids = await fs.readdir(ROOT);
-  return ids.includes(id);
-}
-
 function status(id, prev, state) {
   var file = path.join(ROOT, id, CONFIGFILE);
   return Promise.all([prev||{}, config.read(file), state||inspect(id)]).then(vs => Object.assign.apply(null, vs));
