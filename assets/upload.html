@@ -32,28 +32,29 @@
 <h2></h2>
 <form><grid>
   <div col="2/3">
-    <label>ID</label>
-    <input type="text" name="id" id="id">
+    <label>Unique ID</label>
+    <input type="text" name="id" id="id" placeholder="e.g. hello_app">
   </div>
   <div col="1/3">
     <label>Runtime</label>
-    <input list="from_list" name="from" id="from">
+    <input list="from_list" name="from" id="from" placeholder="Select">
     <datalist id="from_list">
       <option value="python:3.7-slim">
       <option value="node:11-slim">
       <option value="tensorflow/serving">
     </datalist>
   </div>
+  <h5 txt="c">Deploy source (any one)</h5>
   <div col="1/3">
     <label>Git URL</label>
     <input type="text" name="gitUrl" id="gitUrl">
   </div>
   <div col="1/3">
-    <label>File URL</label>
+    <label>Zip File URL</label>
     <input type="text" name="fileUrl" id="fileUrl">
   </div>
   <div col="1/3">
-    <label>File Upload</label>
+    <label>Upload Zip File</label>
     <input type="file" name="fileUpload" id="fileUpload">
   </div>
   <div col="1/1" txt="c">

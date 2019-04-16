@@ -15,13 +15,23 @@ function searchParse(search) {
   .replace(/&/g, '","').replace(/=/g,'":"') + '"}'):{};
 }
 
+function filename(url) {
+  var bi = url.lastIndexOf('/');
+  var basename = url.substring(bi+1);
+  var ei = basename.lastIndexOf('.');
+  return ei<0? basename:basename.substring(0, ei);
+}
+
+function onChange() {
+  $id.value = $id.value||filename($gitUrl.value||$fileUrl.value||$fileUpload.value);
+}
+
 function onReady() {
   var o = searchParse(location.search);
   console.log('onReady()', o);
-  m.render($h2, [o.image||o.container, m('div', m('small', o.from||''))]);
   document.body.className = o.image!=null? 'image':'container';
   $id.value = o.image||o.container||'';
-  $from.value = o.from||'';
+  $from.value = o.from||$from.value||'';
   return o;
 }
 
@@ -46,3 +56,4 @@ function onSubmit(o) {
 
 options = onReady();
 $form.onsubmit = () => onSubmit(options);
+$gitUrl.onchange = $fileUrl.onchange = $fileUpload.onchange = onChange;
