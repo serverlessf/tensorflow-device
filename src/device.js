@@ -11,8 +11,9 @@ const IP = net.address().address;
 const PORT = parseInt(E['PORT']||'8000', 10);
 const ADDRESS = IP+':'+PORT;
 const QUERY = E['QUERY']||ADDRESS;
-const DIRNAME = path.dirname(require.main.filename);
 const ROOT = path.join(process.cwd(), '_data');
+const DIRNAME = path.dirname(require.main.filename);
+const RANDOMID = Math.random().toString(36).substr(-8);
 const CONFIGFILE = 'config.json';
 const OSFUNCTIONS = [
   'arch', 'cpus', 'endianness', 'freemem', 'homedir', 'hostname',
@@ -29,10 +30,11 @@ function osValues(fns=OSFUNCTIONS) {
   return out;
 }
 
-function copyConfig() {
+async function setupConfig() {
   var file = path.join(ROOT, CONFIGFILE);
   if(fs.existsSync(file)) return;
-  fs.copyFileSync(path.join(DIRNAME, CONFIGFILE), file);
+  var value = Object.assign({id: RANDOMID}, await config.read(path.join(DIRNAME, CONFIGFILE)));
+  await config.write(file, value);
 }
 
 
@@ -56,4 +58,4 @@ exports.DIRNAME = DIRNAME;
 exports.status = status;
 exports.setStatus = setStatus;
 fs.mkdirpSync(ROOT);
-copyConfig();
+setupConfig();
