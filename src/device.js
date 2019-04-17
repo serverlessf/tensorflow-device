@@ -14,7 +14,6 @@ const QUERY = E['QUERY']||ADDRESS;
 const ROOT = path.join(process.cwd(), '_data');
 const DIRNAME = path.dirname(require.main.filename);
 const RANDOMID = Math.random().toString(36).substr(-8);
-const CONFIGFILE = 'config.json';
 const OSFUNCTIONS = [
   'arch', 'cpus', 'endianness', 'freemem', 'homedir', 'hostname',
   'loadavg', 'networkInterfaces', 'platform', 'release', 'tmpdir',
