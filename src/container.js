@@ -39,7 +39,17 @@ function lsMap(options) {
     status: o.State, message: o.Status,
     publish: lsMapPublish(o.Ports), env: o.Env,
   };
-};
+}
+
+async function ls(options) {
+  var images = new Map();
+  var cs = (await docker.listContainers(lsOptions(options))).map(lsMap);
+  cs.forEach(c => images.set(c.image, null));
+  await Promise.all(Array.from(images.keys()).map(id => {
+    image.status(id, null, {}).then(i => images.set(id, i));
+  }));
+  return cs.map(c => Object.assign({}, images.get(c.image), c));
+}
 
 function inspectMapPublish(portBindings) {
   var pbs = portBindings||{}, publish = {};
@@ -80,6 +90,26 @@ function inspect(id) {
   return docker.getContainer(id).inspect().then(inspectMap);
 }
 
+// we can update restart policy of already running containers
+const getState = inspect;
+async function getStatus(id, prev, state) {
+  var s = await getState(id);
+  var file = path.join(ROOT, id, CONFIGFILE);
+  return Promise.all([
+    prev||image.status(s.id, null, {}), config.read(file), state||s
+  ]).then(vs => Object.assign.apply(null, vs));
+}
+
+function setStatus(id, value) {
+  var file = path.join(ROOT, id, CONFIGFILE);
+  return config.write(file, value);
+}
+
+async function remove(id, options) {
+  try { await docker.getContainer(id).stop(options); } catch (e) {}
+  return await docker.getContainer(id).remove(options);
+}
+
 function dockerExec(container, options) {
   var o = options, e = '';
   e += `docker container exec -t`;
@@ -94,35 +124,6 @@ function dockerExec(container, options) {
   return e;
 }
 
-
-
-async function ls(options) {
-  var imap = new Map();
-  var cs = await docker.listContainers(lsOptions(options));
-  cs.forEach(c => imap.set(c.Image, null));
-  imgs = await Promise.all(Array.from(imap.keys()).map(id => image.status(id)));
-  imgs.forEach(i => imap.set(i.id, i));
-  return cs.map(c => Object.assign({}, imap.get(c.Image), lsMap(c)));
-}
-
-async function remove(id, options) {
-  try { await docker.getContainer(id).stop(options); } catch (e) {}
-  return await docker.getContainer(id).remove(options);
-}
-
-// we can update restart policy of already running containers
-async function status(id, prev, state) {
-  var file = path.join(ROOT, id, CONFIGFILE);
-  return Promise.all([prev||{}, config.read(file), state||inspect(id)]).then(
-    vs => Object.assign.apply(null, vs)
-  );
-}
-
-function setStatus(id, value) {
-  var file = path.join(ROOT, id, CONFIGFILE);
-  return config.write(file, value);
-}
-
 function exec(id, options) {
   return cp.exec(dockerExec(id, options));
 }
@@ -133,9 +134,11 @@ function command(id, action, options) {
   return docker.getContainer(id)[action](options);
 }
 exports.ls = ls;
-exports.remove = remove;
-exports.status = status;
+exports.inspect = inspect;
+exports.state = getState;
+exports.status = getStatus;
 exports.setStatus = setStatus;
+exports.remove = remove;
 exports.exec = exec;
 exports.command = command;
 fs.mkdirpSync(ROOT);
