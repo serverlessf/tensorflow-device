@@ -34,12 +34,29 @@ const SPECIFIC = {
   tensorflow: {
     workdir: '/models/model',
     expose: [8500, 8501],
-    env: {'MODEL_NAME': 'model'},
+    env: {MODEL_NAME: 'model'},
   },
 };
 const docker = new Docker();
 
 
+
+function lsMap(options) {
+  var o = options;
+  return {
+    id: (o.RepoTags[0]||'').replace(/\:.*/, '')||o.Id, 
+    size: o.Size, tags: o.RepoTags
+  };
+}
+
+async function ls(options) {
+  // NOTE: config.read() changed, this needs to be fixed
+  var ids = await fs.readdir(ROOT), imap = new Map();
+  var imgs = (await docker.listImages(options)).map(lsMap);
+  imgs.forEach(i => imap.set(i.id, i));
+  var _ls = ids.map(id => config.read(path.join(ROOT, id, CONFIGFILE)).then(v => Object.assign(v, imap.get(id))));
+  return await Promise.all(_ls);
+}
 
 function defaults(value) {
   var o = Object.assign({}, COMMON, value);
@@ -47,13 +64,6 @@ function defaults(value) {
   o = Object.assign(o, SPECIFIC[from], o);
   o.ctime = o.atime = o.mtime = new Date();
   return o;
-}
-
-
-
-function findKey(object, value) {
-  for(var k in object)
-    if(object[k]===value) return k;
 }
 
 // from, workdir, run, expose, env, cmd
@@ -72,6 +82,20 @@ function dockerFile(options) {
   return f;
 }
 
+function dockerBuild(dir, tag, log) {
+  return cp.exec(`docker build --tag=${tag} . | tee ${log}`, {cwd: dir});
+}
+
+async function build(id, dir, options) {
+  var o = defaults(options);
+  var df = path.join(dir, DOCKERFILE);
+  await fs.writeFile(df, dockerFile(o));
+  var app = path.join(ROOT, id);
+  if(!fs.existsSync(app)) await fs.mkdirp(app);
+  await config.write(path.join(app, CONFIGFILE), o);
+  return dockerBuild(dir, id, path.join(app, BUILDLOG));
+}
+
 // expose, publish
 async function dockerPublish(options) {
   var o = options;
@@ -82,21 +106,24 @@ async function dockerPublish(options) {
   o.publish = publish;
 }
 
-// env, publish, expose
-function dockerEnv(app, instance, options) {
-  var o = options, env = o.env||{};
-  var expose = o.expose||[], publish = o.publish||{};
-  env['PORT'] = expose.join();
-  env['ADDRESS'] = expose.map(p => `${device.IP}:${findKey(publish, p)}`).join(','); // <- publish structure complex!
-  env['DEVICE'] = device.ADDRESS;
-  env['QUERY'] = device.QUERY;
-  env['INSTANCE'] = instance;
-  env['APP'] = app;
-  o.env = env;
+function findKey(object, value) {
+  for(var k in object)
+    if(object[k]===value) return k;
 }
 
-function dockerBuild(dir, tag, log) {
-  return cp.exec(`docker build --tag=${tag} . | tee ${log}`, {cwd: dir});
+// env, publish, expose
+function dockerEnv(image, container, options) {
+  var o = options, env = o.env||{};
+  var expose = o.expose||[], publish = o.publish||{};
+  env['IP'] = device.IP;
+  env['PORT'] = expose.join(';');
+  env['ADDRESS'] = expose.map(p => `${device.IP}:${findKey(publish, p)}`).join(';');
+  env['ID'] = container;
+  env['IMAGE'] = image;
+  env['DEVICE'] = o.device;
+  env['DEVICEADDR'] = device.ADDRESS;
+  env['QUERYADDR'] = device.QUERYADDR;
+  o.env = env;
 }
 
 // env, publish, restart, rm
@@ -115,40 +142,6 @@ function dockerRun(image, name, options) {
   return c;
 }
 
-function lsMap(options) {
-  var o = options;
-  return {
-    id: (o.RepoTags[0]||'').replace(/\:.*/, '')||o.Id, 
-    size: o.Size, tags: o.RepoTags
-  };
-}
-
-const inspectMap = lsMap;
-function inspect(id) {
-  return docker.getImage(id).inspect().then(inspectMap);
-}
-
-
-
-async function ls(options) {
-  // NOTE: config.read() changed, this needs to be fixed
-  var ids = await fs.readdir(ROOT), imap = new Map();
-  var imgs = (await docker.listImages(options)).map(lsMap);
-  imgs.forEach(i => imap.set(i.id, i));
-  var _ls = ids.map(id => config.read(path.join(ROOT, id, CONFIGFILE)).then(v => Object.assign(v, imap.get(id))));
-  return await Promise.all(_ls);
-}
-
-async function build(id, dir, options) {
-  var o = defaults(options);
-  var df = path.join(dir, DOCKERFILE);
-  await fs.writeFile(df, dockerFile(o));
-  var app = path.join(ROOT, id);
-  if(!fs.existsSync(app)) await fs.mkdirp(app);
-  await config.write(path.join(app, CONFIGFILE), o);
-  return dockerBuild(dir, id, path.join(app, BUILDLOG));
-}
-
 async function run(id, name, options) {
   var file = path.join(ROOT, id, CONFIGFILE);
   // should use global status here
@@ -165,11 +158,23 @@ async function remove(id, options) {
   return fs.remove(path.join(ROOT, id));
 }
 
-function status(id, prev, state) {
+function deviceConfig() {
+  return device.getStatus({}).then(o => Object.assign(o, {
+    device: o.id, deviceaddr: o.address, address: undefined,
+  }));
+}
+
+const inspectMap = lsMap;
+function inspect(id) {
+  return docker.getImage(id).inspect().then(inspectMap);
+}
+
+const getState = inspect;
+function getStatus(id, prev, state) {
   var file = path.join(ROOT, id, CONFIGFILE);
-  return Promise.all([prev||{}, config.read(file), state||inspect(id)]).then(
-    vs => Object.assign.apply(null, vs)
-  );
+  return Promise.all([
+    prev||deviceConfig(), config.read(file), state||getState(id)
+  ]).then(vs => Object.assign.apply(null, vs));
 }
 
 function setStatus(id, value) {
@@ -178,8 +183,8 @@ function setStatus(id, value) {
 }
 
 function logs(id) {
-  var log = path.join(ROOT, id, BUILDLOG);
-  return fs.readFile(log, 'utf8').catch(err => {
+  var file = path.join(ROOT, id, BUILDLOG);
+  return fs.readFile(file, 'utf8').catch(err => {
     if(fs.existsSync(path.join(ROOT, id))) return '';
     throw err;
   });
@@ -197,7 +202,8 @@ exports.ls = ls;
 exports.build = build;
 exports.run = run;
 exports.remove = remove;
-exports.status = status;
+exports.state = getState;
+exports.status = getStatus;
 exports.setStatus = setStatus;
 exports.logs = logs;
 exports.command = command;
