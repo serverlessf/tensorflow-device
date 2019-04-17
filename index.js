@@ -27,21 +27,21 @@ async function devicePost(addr=device.QUERYADDR) {
   if(!addr) return;
   var o = await device.status();
   var scope = o.scope||'default';
-  needle('post', `${addr}/table/${scope}.device/${o.id}`, o, {json: true});
+  needle('post', `${addr}/table/${scope}.device`, o, {json: true});
 }
 
 async function imagePost(id, addr=device.QUERYADDR) {
   if(!addr) return;
   var o = await image.status(id);
   var scope = o.scope||'default';
-  needle('post', `${addr}/table/${scope}.image/${o.id}`, o, {json: true});
+  needle('post', `${addr}/table/${scope}.image`, o, {json: true});
 }
 
 async function containerPost(id, addr=device.QUERYADDR) {
   if(!addr) return;
   var o = await container.status(id);
   var scope = o.scope||'default';
-  needle('post', `${addr}/table/${scope}.container/${o.id}`, o, {json: true});
+  needle('post', `${addr}/table/${scope}.container`, o, {json: true});
 }
 
 async function onInterval(addr=device.QUERYADDR) {
