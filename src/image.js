@@ -50,7 +50,9 @@ function lsMap(options) {
 }
 
 async function ls(options) {
-  var states = (await docker.listImages(options)).map(lsMap);
+  var states = (await docker.listImages(options)).map(lsMap).filter(s => {
+    return !s.id.includes('/') && s.tags.includes(s.id+':latest');
+  });
   return await Promise.all(states.map(s => (
     config.read(path.join(ROOT, s.id, CONFIGFILE)).then(o => Object.assign(o, s))
   )));

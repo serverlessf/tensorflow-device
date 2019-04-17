@@ -34,14 +34,14 @@ async function imagePost(id, addr=device.QUERYADDR) {
   if(!addr) return;
   var o = await image.status(id);
   var scope = o.scope||'default';
-  needle('post', `${q}/table/${scope}.image/${o.id}`, o, {json: true});
+  needle('post', `${addr}/table/${scope}.image/${o.id}`, o, {json: true});
 }
 
 async function containerPost(id, addr=device.QUERYADDR) {
   if(!addr) return;
   var o = await container.status(id);
   var scope = o.scope||'default';
-  needle('post', `${q}/table/${scope}.container/${o.id}`, o, {json: true});
+  needle('post', `${addr}/table/${scope}.container/${o.id}`, o, {json: true});
 }
 
 async function onInterval(addr=device.QUERYADDR) {
