@@ -31,24 +31,21 @@ function osValues(fns=OSFUNCTIONS) {
 }
 
 async function setupConfig() {
-  var file = path.join(ROOT, CONFIGFILE);
-  if(fs.existsSync(file)) return;
-  var value = Object.assign({id: RANDOMID}, await config.read(path.join(DIRNAME, CONFIGFILE)));
-  await config.write(file, value);
+  if(config.exists(ROOT)) return;
+  var value = Object.assign({id: RANDOMID}, await config.read(DIRNAME));
+  await config.write(ROOT, value);
 }
 
 
 
 function status(state) {
-  var file = path.join(ROOT, CONFIGFILE);
-  return Promise.all([config.read(file), state||osValues()]).then(
+  return Promise.all([config.read(ROOT), state||osValues()]).then(
     vs => Object.assign.apply(null, vs)
   );
 }
 
 function setStatus(value) {
-  var file = path.join(ROOT, CONFIGFILE);
-  return config.write(file, value);
+  return config.write(ROOT, value);
 }
 exports.IP = IP;
 exports.PORT = PORT;
