@@ -39,7 +39,9 @@ function copyConfig() {
 
 function status(state) {
   var file = path.join(ROOT, CONFIGFILE);
-  return Promise.all([config.read(file), state||osValues()]).then(vs => Object.assign.apply(null, vs));
+  return Promise.all([config.read(file), state||osValues()]).then(
+    vs => Object.assign.apply(null, vs)
+  );
 }
 
 function setStatus(value) {
