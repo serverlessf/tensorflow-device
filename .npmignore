@@ -1,5 +1,6 @@
 # data
 _data/
+_test.js
 
 # jekyll config
 _config.yml
