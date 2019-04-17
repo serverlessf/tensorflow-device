@@ -10,10 +10,9 @@ const device = require('./device');
 
 const ROOT = path.join(process.cwd(), '_data', 'image');
 const NOOPTIONS = ['changes', 'export', 'start'];
-const DOCKERFILE = 'Dockerfile';
 const CONFIGFILE = 'config.json';
+const DOCKERFILE = 'Dockerfile';
 const BUILDLOG = 'build.log';
-const docker = new Docker();
 const COMMON = {
   version: 0,
   expose: [8000],
@@ -38,6 +37,7 @@ const SPECIFIC = {
     env: {'MODEL_NAME': 'model'},
   },
 };
+const docker = new Docker();
 
 
 
@@ -140,7 +140,6 @@ async function ls(options) {
 }
 
 async function build(id, dir, options) {
-  console.log(options);
   var o = defaults(options);
   var df = path.join(dir, DOCKERFILE);
   await fs.writeFile(df, dockerFile(o));

@@ -23,7 +23,7 @@ const OSFUNCTIONS = [
 
 
 function osValues(fns=OSFUNCTIONS) {
-  var out = {};
+  var out = {address: ADDRESS};
   for(var f of fns)
     if(OSFUNCTIONS.includes(f)) out[f] = os[f]();
   return out;
