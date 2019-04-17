@@ -156,7 +156,7 @@ async function remove(id, options) {
 }
 
 function deviceConfig() {
-  return device.getStatus({}).then(o => Object.assign(o, {
+  return device.status({}).then(o => Object.assign(o, {
     device: o.id, deviceaddr: o.address, address: undefined,
   }));
 }

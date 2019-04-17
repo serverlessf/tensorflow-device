@@ -1,11 +1,32 @@
 const Docker = require('dockerode');
+const device = require('./src/device');
 const image = require('./src/image');
 const container = require('./src/container');
 
 const docker = new Docker();
 
-async function testImage() {
-  var cs = await docker.getContainer('4b9fe19c5539').inspect();
-  console.log(JSON.stringify(cs));
+async function testDevice() {
+  console.log('testDevice()');
+  console.log('\nstate():');
+  console.log(device.state());
+  console.log('\nstatus():');
+  console.log(await device.status());
+  console.log();
 }
-testImage();
+async function testImage() {
+  console.log('testImage()');
+  console.log('\nls():');
+  var is = await image.ls();
+  console.log(is);
+  console.log('\nstatus():');
+  console.log(await image.status(is[0].id));
+  console.log('\ndocker.inspect():');
+  var i = await docker.getImage(is[0].id).inspect();
+  console.log(JSON.stringify(i));
+  console.log();
+}
+async function test() {
+  await testDevice();
+  await testImage();
+}
+test();
