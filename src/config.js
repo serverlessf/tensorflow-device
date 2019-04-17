@@ -1,15 +1,8 @@
 const fs = require('extra-fs');
-const net = require('extra-net');
 const path = require('path');
 
 
 
-const E = process.env;
-const IP = net.address().address;
-const PORT = parseInt(E['PORT']||'8000', 10);
-const DEVICE = `${IP}:${PORT}`;
-const MASTER = E['MASTER']||'';
-const DIRNAME = path.dirname(require.main.filename);
 const COMMON = {
   version: 0,
   expose: [8000],
@@ -53,11 +46,6 @@ async function write(file, value) {
   await fs.mkdirp(path.dirname(file));
   await fs.writeFile(file, JSON.stringify(Object.assign(await read(file), value), null, 2));
 }
-exports.IP = IP;
-exports.PORT = PORT;
-exports.DEVICE = DEVICE;
-exports.MASTER = MASTER;
-exports.DIRNAME = DIRNAME;
 exports.write = write;
 exports.read = read;
 exports.defaults = defaults;

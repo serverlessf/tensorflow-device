@@ -4,6 +4,7 @@ const cp = require('extra-cp');
 const fs = require('extra-fs');
 const path = require('path');
 const config = require('./config');
+const device = require('./device');
 
 
 
@@ -52,9 +53,9 @@ function dockerEnv(app, instance, options) {
   var o = options, env = o.env||{};
   var expose = o.expose||[], publish = o.publish||{};
   env['PORT'] = expose.join();
-  env['ADDRESS'] = expose.map(p => `${config.IP}:${findKey(publish, p)}`).join(','); // <- publish structure complex!
-  env['DEVICE'] = config.DEVICE;
-  env['MASTER'] = config.MASTER;
+  env['ADDRESS'] = expose.map(p => `${device.IP}:${findKey(publish, p)}`).join(','); // <- publish structure complex!
+  env['DEVICE'] = device.ADDRESS;
+  env['QUERY'] = device.QUERY;
   env['INSTANCE'] = instance;
   env['APP'] = app;
   o.env = env;

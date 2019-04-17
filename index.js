@@ -123,4 +123,4 @@ app.use((err, req, res, next) => {
   res.status(err.statusCode||500).send(err.json||err);
 });
 app.use(express.static(ASSETS, {extensions: ['html']}));
-server.listen(config.PORT, () => console.log('DEVICE running at '+config.DEVICE));
+server.listen(device.PORT, () => console.log('DEVICE running at '+device.ADDRESS));
