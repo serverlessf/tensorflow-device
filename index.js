@@ -44,17 +44,15 @@ async function containerPost(id, addr=device.QUERYADDR) {
   needle('post', `${q}/table/${scope}.container/${o.id}`, o, {json: true});
 }
 
-
-
-async function onInterval() {
-  var q = device.QUERYADDR;
-  if(!q) return;
-  var d = await device.status();
-  var scope = d.scope||'default';
-  needle('post', `${q}/table/${scope}.device/${d.id}`, d, {json: true});
-  
+async function onInterval(addr=device.QUERYADDR) {
+  if(!addr) return;
+  devicePost();
+  image.ls().then(is => is.forEach(i => imagePost(i.id)));
+  container.ls().then(cs => cs.forEach(c => containerPost(c.id)));
 }
 setInterval(onInterval, STATUSRATE);
+
+
 
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
