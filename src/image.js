@@ -45,7 +45,6 @@ function lsMap(options) {
   var o = options;
   return {
     id: (o.RepoTags[0]||'').replace(/\:.*/, '')||o.Id, 
-    from: o.ParentId? o.ParentId.replace(/^sha256\:/, ''):null,
     size: o.Size, tags: o.RepoTags
   };
 }
@@ -182,7 +181,6 @@ function inspectMap(options) {
   var o = options, c = o.Config;
   return {
     id: (o.RepoTags[0]||'').replace(/\:.*/, '')||o.Id, 
-    from: o.Parent? o.Parent.replace(/^sha256\:/, ''):null,
     size: o.Size, tags: o.RepoTags, expose: inspectMapExpose(c.ExposedPorts),
     cmd: c.Cmd, env: inspectMapEnv(c.Env), workdir: c.WorkingDir,
     ctime: o.Created, mtime: o.Metadata.LastTagTime,
