@@ -113,7 +113,9 @@ async function remove(id, options) {
 // we can update restart policy of already running containers
 async function status(id, prev, state) {
   var file = path.join(ROOT, id, CONFIGFILE);
-  return Promise.all([prev||{}, config.read(file), state||inspect(id)]).then(vs => Object.assign.apply(null, vs));
+  return Promise.all([prev||{}, config.read(file), state||inspect(id)]).then(
+    vs => Object.assign.apply(null, vs)
+  );
 }
 
 function setStatus(id, value) {
