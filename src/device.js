@@ -25,7 +25,7 @@ const OSFUNCTIONS = [
 
 
 function getState(fns=OSFUNCTIONS) {
-  var out = {address: ADDRESS, query: QUERY, queryaddr: QUERYADDR};
+  var out = {};
   for(var f of fns)
     if(OSFUNCTIONS.includes(f)) out[f] = os[f]();
   return out;
@@ -33,7 +33,8 @@ function getState(fns=OSFUNCTIONS) {
 
 function getStatus(state) {
   var file = path.join(ROOT, CONFIGFILE);
-  return Promise.all([config.read(file), state||getState()]).then(
+  var vstate = {address: ADDRESS, query: QUERY, queryaddr: QUERYADDR};
+  return Promise.all([config.read(file), state||getState(), vstate]).then(
     vs => Object.assign.apply(null, vs)
   );
 }

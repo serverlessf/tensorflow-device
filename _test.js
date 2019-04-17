@@ -20,9 +20,6 @@ async function testImage() {
   console.log(is);
   console.log('\nstatus():');
   console.log(await image.status(is[0].id));
-  console.log('\ndocker.inspect():');
-  var i = await docker.getImage(is[0].id).inspect();
-  console.log(JSON.stringify(i));
   console.log();
 }
 async function test() {

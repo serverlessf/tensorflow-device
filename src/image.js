@@ -45,6 +45,7 @@ function lsMap(options) {
   var o = options;
   return {
     id: (o.RepoTags[0]||'').replace(/\:.*/, '')||o.Id, 
+    from: o.ParentId? o.ParentId.replace(/^sha256\:/, ''):null,
     size: o.Size, tags: o.RepoTags
   };
 }
@@ -161,7 +162,33 @@ function deviceConfig() {
   }));
 }
 
-const inspectMap = lsMap;
+function inspectMapExpose(ports) {
+  var out = [];
+  for(var k in ports)
+    out.push(parseInt(k.split('/')[0], 10));
+  return out;
+}
+
+function inspectMapEnv(env) {
+  var out = {};
+  for(var e of env) {
+    var p = e.split('=');
+    out[p[0]] = p[1];
+  }
+  return out;
+}
+
+function inspectMap(options) {
+  var o = options, c = o.Config;
+  return {
+    id: (o.RepoTags[0]||'').replace(/\:.*/, '')||o.Id, 
+    from: o.Parent? o.Parent.replace(/^sha256\:/, ''):null,
+    size: o.Size, tags: o.RepoTags, expose: inspectMapExpose(c.ExposedPorts),
+    cmd: c.Cmd, env: inspectMapEnv(c.Env), workdir: c.WorkingDir,
+    ctime: o.Created, mtime: o.Metadata.LastTagTime,
+  };
+}
+
 function inspect(id) {
   return docker.getImage(id).inspect().then(inspectMap);
 }
