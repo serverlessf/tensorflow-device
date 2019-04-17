@@ -90,7 +90,6 @@ app.post('/image', express.async(async (req, res) => {
   await decompress({gitUrl, fileUrl, fileUpload}, tmp);
   var o = await image.status(id, {}, req.body);
   o.version = Math.max(parseInt(version||'0', 10), (o.version||0)+1);
-  console.log('Building image', id, o.version);
   var out = await image.build(id, tmp, o);
   await fs.remove(tmp);
   res.json(out);
