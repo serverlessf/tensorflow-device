@@ -50,12 +50,10 @@ function lsMap(options) {
 }
 
 async function ls(options) {
-  // NOTE: config.read() changed, this needs to be fixed
-  var ids = await fs.readdir(ROOT), imap = new Map();
-  var imgs = (await docker.listImages(options)).map(lsMap);
-  imgs.forEach(i => imap.set(i.id, i));
-  var _ls = ids.map(id => config.read(path.join(ROOT, id, CONFIGFILE)).then(v => Object.assign(v, imap.get(id))));
-  return await Promise.all(_ls);
+  var states = (await docker.listImages(options)).map(lsMap);
+  return await Promise.all(states.map(s => (
+    config.read(path.join(ROOT, s.id, CONFIGFILE)).then(o => Object.assign(o, s))
+  )));
 }
 
 function defaults(value) {
@@ -115,14 +113,14 @@ function findKey(object, value) {
 function dockerEnv(image, container, options) {
   var o = options, env = o.env||{};
   var expose = o.expose||[], publish = o.publish||{};
-  env['IP'] = device.IP;
   env['PORT'] = expose.join(';');
   env['ADDRESS'] = expose.map(p => `${device.IP}:${findKey(publish, p)}`).join(';');
   env['ID'] = container;
   env['IMAGE'] = image;
   env['DEVICE'] = o.device;
-  env['DEVICEADDR'] = device.ADDRESS;
-  env['QUERYADDR'] = device.QUERYADDR;
+  env['DEVICEADDR'] = o.deviceaddr;
+  env['QUERY'] = o.query;
+  env['QUERYADDR'] = o.queryaddr;
   o.env = env;
 }
 
@@ -144,8 +142,7 @@ function dockerRun(image, name, options) {
 
 async function run(id, name, options) {
   var file = path.join(ROOT, id, CONFIGFILE);
-  // should use global status here
-  var o = Object.assign(await config.read(file), options);
+  var o = Object.assign(await getStatus(id), options);
   await dockerPublish(o);
   dockerEnv(id, name, o);
   return cp.exec(dockerRun(id, name, o));

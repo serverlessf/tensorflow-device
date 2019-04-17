@@ -25,7 +25,7 @@ const OSFUNCTIONS = [
 
 
 function getState(fns=OSFUNCTIONS) {
-  var out = {address: ADDRESS};
+  var out = {address: ADDRESS, query: QUERY, queryaddr: QUERYADDR};
   for(var f of fns)
     if(OSFUNCTIONS.includes(f)) out[f] = os[f]();
   return out;
