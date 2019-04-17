@@ -1,4 +1,5 @@
 const $table = document.querySelector('tbody');
+const $prune = document.querySelector('#prune');
 var options = {};
 
 
@@ -29,8 +30,19 @@ async function request(o) {
   ])));
 }
 
+function onPrune(o) {
+  console.log('onPrune()', o);
+  var cmd = 'docker image prune -f';
+  m.request({method: 'POST', url: '/exec', data: {cmd}}).then((data) => {
+    var n = Math.max(data.stdout.split('\n').length-4, 0);
+    iziToast.success({message: n+' images removed'});
+  }, (err) => iziToast.error({message: err.message}));
+  return false;
+}
+
 
 
 options = onReady();
 request(options);
 setInterval(() => request(options), 1000);
+$prune.onclick = onPrune;
