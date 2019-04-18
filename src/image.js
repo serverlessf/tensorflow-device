@@ -131,8 +131,8 @@ function dockerRun(image, name, options) {
   var o = options, c = '';
   c += `docker run -itd`;
   for(var k in o.env||{})
-    c += ` -e ${k}=${o.env[k]}`;
-  c += ` --name ${name}`;
+    c += ` -e "${k}=${o.env[k]}"`;
+  c += ` --name "${name}"`;
   for(var k in o.publish)
     c += ` -p ${k}:${o.publish[k]}`;
   if(o.restart) c += ` --restart ${o.restart}`;
