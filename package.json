@@ -1,6 +1,6 @@
 {
   "name": "@mycelium/device",
-  "version": "0.1.74",
+  "version": "0.1.75",
   "description": "Device support for small distributed IoT network.",
   "main": "index.js",
   "scripts": {
@@ -31,9 +31,9 @@
     "dockerode": "^3.2.1",
     "express-fileupload": "^1.2.0",
     "extra-cp": "^1.1.2",
-    "extra-decompress": "^1.0.3",
+    "extra-decompress": "^1.0.4",
     "extra-express": "^1.0.1",
-    "extra-fs": "^2.0.3",
+    "extra-fs": "^2.0.4",
     "extra-net": "^1.1.0",
     "needle": "^2.5.2"
   }
